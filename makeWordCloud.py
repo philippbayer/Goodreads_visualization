@@ -23,7 +23,7 @@ def replace_by_space(word):
             new.append(letter)
     return "".join(new)
 
-all_my_words = set()
+all_my_words = []
 
 fh = open("./goodreads_export.csv")
 header = fh.readline().rstrip().split("\t")
@@ -39,7 +39,7 @@ for line in fh:
     cleaned_review = filter(lambda x: x in PRINTABLE, cleaned_review)
     for w in cleaned_review.lower().split():
         if w not in STOP:
-            all_my_words.add(w)
+            all_my_words.append(w)
 
 # WordCloud takes only string, no list/set
 wordcloud = WordCloud(max_font_size=40).generate(" ".join(all_my_words))
