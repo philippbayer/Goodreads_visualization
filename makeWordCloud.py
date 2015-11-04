@@ -30,20 +30,24 @@ header = fh.readline().rstrip().split("\t")
 position = header.index("My Review")
 for line in fh:
     ll = line.split("\t")
-    review = ll[position]
+    review = ll[position].lower()
     if not review:
         # empty review
         continue
+    # clean strings
     cleaned_review = re.sub(html_clean, '', review)
     cleaned_review = replace_by_space(cleaned_review)
     cleaned_review = filter(lambda x: x in PRINTABLE, cleaned_review)
-    for w in cleaned_review.lower().split():
-        if w not in STOP:
-            all_my_words.append(w)
+    # clean words
+    cleaned_review = cleaned_review.split()
+    cleaned_review = filter(lambda x: x not in STOP, cleaned_review)
+    all_my_words += cleaned_review
 
 # WordCloud takes only string, no list/set
 wordcloud = WordCloud(max_font_size=40).generate(" ".join(all_my_words))
 plt.imshow(wordcloud)
 plt.axis('off')
 plt.savefig('GR_wordcloud.png')
+
+fh.close()
 
