@@ -5,6 +5,7 @@ from collections import defaultdict, Counter
 from matplotlib.pyplot import figure, show, xticks, tight_layout, savefig
 from scipy.stats import gaussian_kde
 from numpy import arange
+import csv
 
 CATEGORIES = 10 # number of most crowded categories to plot
 
@@ -35,30 +36,38 @@ def violin_plot(ax,data,pos, bp=False):
 if __name__ == "__main__":
     shelves_ratings = defaultdict(list) # key: shelf-name, value: list of ratings
     shelves_counter = Counter() # counts how many books on each shelf
-    with open("./only_read.tsv") as read:
-        for line in read:
-            ll = line.rstrip().split('\t')
-            my_rating = int(ll[7])
-            shelves = ll[16].strip().split(",")
-            for s in shelves:
-                # empty shelf?
-                if not s: continue
-                s = s.strip() # I had "non-fiction" and " non-fiction"
-                shelves_ratings[s].append(my_rating)
-                shelves_counter[s] += 1
 
-        data_to_plot = []
-        x_axis_labels = []
-        pos = range(CATEGORIES)
-        for name, _ in shelves_counter.most_common(CATEGORIES):
-            data_to_plot.append(shelves_ratings[name])
-            x_axis_labels.append("{0} ({1})".format(name, shelves_counter[name]))
+    fh = open('./goodreads_export.csv')
+    reader = csv.reader(fh)
+    header = reader.next()
+    position = header.index('My Review')
 
-        fig = figure()
-        ax = fig.add_subplot(111)
-        violin_plot(ax, data_to_plot, pos, bp=False)
-        # overwrite the x-axis labels
-        xticks(range(CATEGORIES), x_axis_labels, size="small", rotation=90)
-        tight_layout()
-        savefig("categories_boxplot.png")
-        show()
+    for ll in reader:
+        review = ll[position].lower()
+        my_rating = int(ll[7])
+        if my_rating == 0:
+            # no rating
+            continue
+        shelves = ll[16].strip().split(",")
+        for s in shelves:
+            # empty shelf?
+            if not s: continue
+            s = s.strip() # I had "non-fiction" and " non-fiction"
+            shelves_ratings[s].append(my_rating)
+            shelves_counter[s] += 1
+
+    data_to_plot = []
+    x_axis_labels = []
+    pos = range(CATEGORIES)
+    for name, _ in shelves_counter.most_common(CATEGORIES):
+        data_to_plot.append(shelves_ratings[name])
+        x_axis_labels.append("{0} ({1})".format(name, shelves_counter[name]))
+
+    fig = figure()
+    ax = fig.add_subplot(111)
+    violin_plot(ax, data_to_plot, pos, bp=False)
+    # overwrite the x-axis labels
+    xticks(range(CATEGORIES), x_axis_labels, size="small", rotation=90)
+    tight_layout()
+    savefig("categories_violinplot.png")
+    #show()

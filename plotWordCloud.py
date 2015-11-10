@@ -8,6 +8,7 @@ import string
 from nltk.corpus import stopwords
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
+import csv
 
 STOP = stopwords.words("english")
 html_clean = re.compile('<.*?>')
@@ -18,18 +19,19 @@ def replace_by_space(word):
     new = []
     for letter in word:
         if letter in REMOVE:
-            new.append(" ")
+            new.append(' ')
         else:
             new.append(letter)
-    return "".join(new)
+    return ''.join(new)
 
 all_my_words = []
 
-fh = open("./goodreads_export.csv")
-header = fh.readline().rstrip().split("\t")
-position = header.index("My Review")
-for line in fh:
-    ll = line.split("\t")
+fh = open('./goodreads_export.csv')
+reader = csv.reader(fh)
+header = reader.next()
+position = header.index('My Review')
+
+for ll in reader:
     review = ll[position].lower()
     if not review:
         # empty review
@@ -44,7 +46,7 @@ for line in fh:
     all_my_words += cleaned_review
 
 # WordCloud takes only string, no list/set
-wordcloud = WordCloud(max_font_size=40).generate(" ".join(all_my_words))
+wordcloud = WordCloud(max_font_size=40).generate(' '.join(all_my_words))
 plt.imshow(wordcloud)
 plt.axis('off')
 plt.savefig('GR_wordcloud.png')

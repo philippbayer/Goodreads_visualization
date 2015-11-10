@@ -1,13 +1,29 @@
-Some people on goodreads have complained that their reviews disappear and I feel (but don't know) that I lost at least one, this tracks my exported CSV to check whether it actually happens
+A collection of scripts to play around with goodreads data
 
-Some ideas for things to do with this:
+You can use it with your own data - go to [here](https://www.goodreads.com/review/import) and press "Export your library" to get your own csv, it should work out of the box with these scripts
+
+# Scripts included:
+
+## plotWordCloud.py
+
+This one parses goodreads_export.csv, removes noisy words and creates a word-cloud of most commonly used words:
+
+![wordcloud](https://raw.github.com/philippbayer/my_goodreads_shelves/master/GR_wordcloud.png)
+
+## plotRatingsVsBookshelves.py
+
+Parses ratings for books, makes a violin plot for the 10 categories with the most rated books:
+
+![Ratings_by_Shelves](https://raw.github.com/philippbayer/my_goodreads_shelves/master/categories_violinplot.png)
+
+There is some *bad* SF out there.
+
+Some other ideas for things to do with this:
+
+- Some people on goodreads have complained that their reviews disappear and I feel (but don't know) that I lost at least one, this tracks my exported CSV to check whether it actually happens. So far I haven't observed it.
 - Write automated parser that exports reviews to html/epub/tumblr/blogger/wordpress etc.
 - cron job which automatically pulls exported CSV from https://www.goodreads.com/review_porter/goodreads_export.csv (login a bit weird esp. with Facebook login, use API instead? Needs dev key, but easier to do /review/list.xml=USERID than to play Red Queen with Facebook's oauth)
-- various visualization things like word-clouds, stats for correlations of ratings with, for example, shelf etc.
+- various visualization things in regards to language use
 
-HOW TO OPEN:
-The format is a bit weird, as it's a comma-delimited file with double quotes enclosing each column, so you can't just split by comma, you'll split the review text. If all else fails, use Libreoffice (Text Delimiter -> ", Separated by -> Comma) to insert tabs.
-
-License for reviews and code and whatnot: CC-BY-SA 4.0
-
-
+License for reviews: CC-BY-SA 4.0
+Code: MIT
