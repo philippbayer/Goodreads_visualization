@@ -10,7 +10,7 @@ Do I give longer books better scores? A minor tendency but nothing special (it's
 
 ![Number pages versus ratings](https://raw.github.com/philippbayer/my_goodreads_shelves/master/Pages_vs_Ratings.png)
 
-I seem to mostly books at around 200 to 300 pages so it's hard to tell whether I give longer books better ratings. It's also a nice example that in regards to linear regression, a p-value as tiny as this one doesn't mean much, the r-value is still bad.
+I seem to mostly read books at around 200 to 300 pages so it's hard to tell whether I give longer books better ratings. It's also a nice example that in regards to linear regression, a p-value as tiny as this one doesn't mean much, the r-value is still bad.
 
 ## plotRatingsVsBookshelves.py
 

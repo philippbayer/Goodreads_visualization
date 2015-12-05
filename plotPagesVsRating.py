@@ -28,7 +28,7 @@ if __name__ == '__main__':
         all_pages.append(pages)
 
     data = pd.DataFrame({"Ratings":all_ratings, "Pages":all_pages})
-    g = sns.jointplot("Ratings", "Pages", data=data, color="r", kind="reg")
+    g = sns.jointplot("Pages", "Ratings", data=data, color="r", kind="reg")
     plt.tight_layout()
     plt.savefig("Pages_vs_Ratings.png")
     plt.show()
