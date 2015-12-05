@@ -12,7 +12,7 @@ This one parses goodreads_export.csv, removes noisy words and creates a word-clo
 
 ## plotRatingsVsBookshelves.py
 
-Parses ratings for books, makes a violin plot for the 10 categories with the most rated books:
+Parses ratings for books, makes a violin plot for the 7 categories with the most rated books:
 
 ![Ratings_by_Shelves](https://raw.github.com/philippbayer/my_goodreads_shelves/master/categories_violinplot.png)
 

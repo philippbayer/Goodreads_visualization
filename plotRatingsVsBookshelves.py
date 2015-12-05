@@ -40,9 +40,9 @@ if __name__ == "__main__":
             names.append(name)
             ratings.append(number)
 
-    full_table = pd.DataFrame({"name":names, "rating":ratings})
+    full_table = pd.DataFrame({"Category":names, "Rating":ratings})
 
-    sns.violinplot(x="name", y="rating", data=full_table)
+    sns.violinplot(x="Category", y="Rating", data=full_table)
     plt.savefig("categories_violinplot.png")
     plt.show()
 
