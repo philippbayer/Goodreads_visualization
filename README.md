@@ -4,11 +4,11 @@ You can use it with your own data - go to [here](https://www.goodreads.com/revie
 
 # Scripts included:
 
-## plotWordCloud.py
+## plotPagesVsRating.py
 
-This one parses goodreads_export.csv, removes noisy words and creates a word-cloud of most commonly used words:
+Do I give longer books better scores? A minor tendency but nothing special (it's confounded by having just 5 possible numbers in ratings)
 
-![wordcloud](https://raw.github.com/philippbayer/my_goodreads_shelves/master/GR_wordcloud.png)
+![Number pages versus ratings](https://raw.github.com/philippbayer/my_goodreads_shelves/master/Pages_vs_Ratings.png)
 
 ## plotRatingsVsBookshelves.py
 
@@ -23,6 +23,14 @@ There is some *bad* SF out there.
 Parses the dates read for each book read, plots the distance between books read in days - shows you how quickly you hop from book to book.
 
 ![Distance in days between books](https://raw.github.com/philippbayer/my_goodreads_shelves/master/Histogram_Days_Read_Distance.png)
+
+
+## plotWordCloud.py
+
+This one removes noisy words and creates a word-cloud of most commonly used words in the reviews:
+
+![wordcloud](https://raw.github.com/philippbayer/my_goodreads_shelves/master/GR_wordcloud.png)
+
 
 Some other ideas for things to do with this:
 

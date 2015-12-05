@@ -43,6 +43,7 @@ if __name__ == "__main__":
     full_table = pd.DataFrame({"Category":names, "Rating":ratings})
 
     sns.violinplot(x="Category", y="Rating", data=full_table)
+    plt.tight_layout()
     plt.savefig("categories_violinplot.png")
     plt.show()
 
