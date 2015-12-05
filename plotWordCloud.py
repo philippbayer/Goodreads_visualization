@@ -7,7 +7,6 @@ import re
 import string
 from nltk.corpus import stopwords
 from wordcloud import WordCloud
-import matplotlib.pyplot as plt
 import csv
 
 STOP = stopwords.words("english")
@@ -46,10 +45,8 @@ for ll in reader:
     all_my_words += cleaned_review
 
 # WordCloud takes only string, no list/set
-wordcloud = WordCloud(max_font_size=40).generate(' '.join(all_my_words))
-plt.imshow(wordcloud)
-plt.axis('off')
-plt.savefig('GR_wordcloud.png')
+wordcloud = WordCloud(max_font_size=200, width=800, height=500).generate(' '.join(all_my_words))
+wordcloud.to_file("GR_wordcloud.png")
 
 fh.close()
 
