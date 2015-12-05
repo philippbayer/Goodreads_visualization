@@ -18,6 +18,12 @@ Parses ratings for books, makes a violin plot for the 10 categories with the mos
 
 There is some *bad* SF out there.
 
+## plotHistogramDistanceRead.py
+
+Parses the dates read for each book read, plots the distance between books read in days - shows you how quickly you hop from book to book.
+
+![Distance in days between books](https://raw.github.com/philippbayer/my_goodreads_shelves/master/Histogram_Days_Read_Distance.png)
+
 Some other ideas for things to do with this:
 
 - Some people on goodreads have complained that their reviews disappear and I feel (but don't know) that I lost at least one, this tracks my exported CSV to check whether it actually happens. So far I haven't observed it.
