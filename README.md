@@ -10,6 +10,8 @@ Do I give longer books better scores? A minor tendency but nothing special (it's
 
 ![Number pages versus ratings](https://raw.github.com/philippbayer/my_goodreads_shelves/master/Pages_vs_Ratings.png)
 
+I seem to mostly books at around 200 to 300 pages so it's hard to tell whether I give longer books better ratings. It's also a nice example that in regards to linear regression, a p-value as tiny as this one doesn't mean much, the r-value is still bad.
+
 ## plotRatingsVsBookshelves.py
 
 Parses ratings for books, makes a violin plot for the 7 categories with the most rated books:
@@ -23,7 +25,6 @@ There is some *bad* SF out there.
 Parses the dates read for each book read, plots the distance between books read in days - shows you how quickly you hop from book to book.
 
 ![Distance in days between books](https://raw.github.com/philippbayer/my_goodreads_shelves/master/Histogram_Days_Read_Distance.png)
-
 
 ## plotWordCloud.py
 
