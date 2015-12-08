@@ -42,6 +42,14 @@ This one removes noisy words and creates a word-cloud of most commonly used word
 
 ![wordcloud](https://raw.github.com/philippbayer/my_goodreads_shelves/master/GR_wordcloud.png)
 
+## plotBooksreadVsWeekday.py
+
+Parses the weekday a "book read" has been added, counts them
+
+![wordcloud](https://raw.github.com/philippbayer/my_goodreads_shelves/master/Books_read_by_weekday.png)
+
+Monday is procrastination day.
+
 
 Some other ideas for things to do with this:
 
