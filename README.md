@@ -22,9 +22,19 @@ There is some *bad* SF out there.
 
 ## plotHistogramDistanceRead.py
 
-Parses the dates read for each book read, plots the distance between books read in days - shows you how quickly you hop from book to book.
+Parses the "dates read" for each book read, plots the distance between books read in days - shows you how quickly you hop from book to book.
 
 ![Distance in days between books](https://raw.github.com/philippbayer/my_goodreads_shelves/master/Histogram_Days_Read_Distance.png)
+
+Of course, sometimes I just add several at once and guesstimate the correct "date read".
+
+## plotHeatmapDatesRead.py
+
+Parses the "dates read" for each book read, bins them by month, and makes a heatmap to show in which months I read more than in others.
+
+![Distance in days between books](https://raw.github.com/philippbayer/my_goodreads_shelves/master/Heatmap_Books_Read_Per_Month.png)
+
+What happened in May last year??
 
 ## plotWordCloud.py
 
