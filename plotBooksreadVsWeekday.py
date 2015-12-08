@@ -2,14 +2,18 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import calendar
-from collections import defaultdict
+from collections import OrderedDict
 
 if __name__ == "__main__":
     df = pd.read_csv("./goodreads_export.csv")
     dates = df.xs("Date Read",axis=1).dropna()
     dates = pd.to_datetime(dates)
 
-    read_dict = defaultdict(int) # key: weekday, value: count of books read
+    # initialize the dict in the correct order
+    read_dict = OrderedDict() # key: weekday, value: count of books read
+    for day in range(0,7):
+        read_dict[calendar.day_name[day]] = 0
+
     for date in dates:
         weekday_name = calendar.day_name[date.weekday()]  # Sunday
         read_dict[weekday_name] += 1
