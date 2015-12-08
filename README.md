@@ -1,6 +1,6 @@
 A collection of scripts to play around with goodreads data
 
-You can use it with your own data - go to [here](https://www.goodreads.com/review/import) and press "Export your library" to get your own csv, it should work out of the box with these scripts
+You can use it with your own data - go to [here](https://www.goodreads.com/review/import) and press "Export your library" to get your own csv, it should work out of the box with these scripts. Each script expects a "goodreads_export.csv" in the current folder (this may change), you can just replace that one with yours from goodreads, and then run any of these scripts.
 
 # Scripts included:
 
@@ -53,6 +53,7 @@ Monday is procrastination day.
 
 Some other ideas for things to do with this:
 
+- A Python-library that interacts with the goodreads csv - a lot of code in this repo repeats itself slightly
 - Some people on goodreads have complained that their reviews disappear and I feel (but don't know) that I lost at least one, this tracks my exported CSV to check whether it actually happens. So far I haven't observed it.
 - Write automated parser that exports reviews to html/epub/tumblr/blogger/wordpress etc.
 - cron job which automatically pulls exported CSV from https://www.goodreads.com/review_porter/goodreads_export.csv (login a bit weird esp. with Facebook login, use API instead? Needs dev key, but easier to do /review/list.xml=USERID than to play Red Queen with Facebook's oauth)
