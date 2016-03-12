@@ -34,9 +34,11 @@ Parses the "dates read" for each book read, bins them by month, and makes a heat
 
 ![Heatmap books read per month](https://raw.github.com/philippbayer/Goodreads_visualization/master/Heatmap_Books_Read_Per_Month.png)
 
-What happened in May last year??
+What happened in May 2014?
 
 ![Lineplot books read per month by year](https://raw.github.com/philippbayer/Goodreads_visualization/master/Lineplot_Books_Read_Per_Month_split_up_by_year.png)
+
+It's nice how reading behaviour (Goodreads usage) connects over the months - it slowly in 2013, stays constant in 2014/2015, and now goes down again.
 
 ## plotWordCloud.py
 
