@@ -43,9 +43,18 @@ if __name__ == "__main__":
 
     # now get it in the format heatmap() wants
     df = pd.DataFrame( { "month":all_months, "year":all_years, "books_read":all_counts } )
-    df = df.pivot("month", "year", "books_read")
+    dfp = df.pivot("month", "year", "books_read")
 
     # now make the heatmap
-    ax = sns.heatmap(df, annot=True)
+    ax = sns.heatmap(dfp, annot=True)
     plt.savefig("Heatmap_Books_Read_Per_Month.png")
+    plt.show()
+    
+    # now make histogram by year
+    g = sns.FacetGrid(df, col="year", sharey=True, sharex=True) 
+    g.map(plt.plot, "month", "books_read")
+    g.set_ylabels("Books read")
+    g.set_xlabels("Month")
+    plt.xlim(1, 12)
+    plt.savefig("Lineplot_Books_Read_Per_Month_split_up_by_year.png")
     plt.show()

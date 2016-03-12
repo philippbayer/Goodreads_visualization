@@ -8,7 +8,7 @@ You can use it with your own data - go to [here](https://www.goodreads.com/revie
 
 Do I give longer books better scores? A minor tendency but nothing special (it's confounded by having just 5 possible numbers in ratings)
 
-![Number pages versus ratings](https://raw.github.com/philippbayer/my_goodreads_shelves/master/Pages_vs_Ratings.png)
+![Number pages versus ratings](https://raw.github.com/philippbayer/Goodreads_visualization/master/Pages_vs_Ratings.png)
 
 I seem to mostly read books at around 200 to 300 pages so it's hard to tell whether I give longer books better ratings. It's also a nice example that in regards to linear regression, a p-value as tiny as this one doesn't mean much, the r-value is still bad.
 
@@ -16,7 +16,7 @@ I seem to mostly read books at around 200 to 300 pages so it's hard to tell whet
 
 Parses ratings for books, makes a violin plot for the 7 categories with the most rated books:
 
-![Ratings_by_Shelves](https://raw.github.com/philippbayer/my_goodreads_shelves/master/categories_violinplot.png)
+![Ratings_by_Shelves](https://raw.github.com/philippbayer/Goodreads_visualization/master/categories_violinplot.png)
 
 There is some *bad* SF out there.
 
@@ -24,29 +24,31 @@ There is some *bad* SF out there.
 
 Parses the "dates read" for each book read, plots the distance between books read in days - shows you how quickly you hop from book to book.
 
-![Distance in days between books](https://raw.github.com/philippbayer/my_goodreads_shelves/master/Histogram_Days_Read_Distance.png)
+![Distance in days between books](https://raw.github.com/philippbayer/Goodreads_visualization/master/Histogram_Days_Read_Distance.png)
 
 Of course, sometimes I just add several at once and guesstimate the correct "date read".
 
 ## plotHeatmapDatesRead.py
 
-Parses the "dates read" for each book read, bins them by month, and makes a heatmap to show in which months I read more than in others.
+Parses the "dates read" for each book read, bins them by month, and makes a heatmap to show in which months I read more than in others. Also makes a lineplot for books read, split up by year.
 
-![Distance in days between books](https://raw.github.com/philippbayer/my_goodreads_shelves/master/Heatmap_Books_Read_Per_Month.png)
+![Heatmap books read per month](https://raw.github.com/philippbayer/Goodreads_visualization/master/Heatmap_Books_Read_Per_Month.png)
 
 What happened in May last year??
+
+![Lineplot books read per month by year](https://raw.github.com/philippbayer/Goodreads_visualization/master/Lineplot_Books_Read_Per_Month_split_up_by_year.png)
 
 ## plotWordCloud.py
 
 This one removes noisy words and creates a word-cloud of most commonly used words in the reviews:
 
-![wordcloud](https://raw.github.com/philippbayer/my_goodreads_shelves/master/GR_wordcloud.png)
+![wordcloud](https://raw.github.com/philippbayer/Goodreads_visualization/master/GR_wordcloud.png)
 
 ## plotBooksreadVsWeekday.py
 
 Parses the weekday a "book read" has been added, counts them
 
-![wordcloud](https://raw.github.com/philippbayer/my_goodreads_shelves/master/Books_read_by_weekday.png)
+![wordcloud](https://raw.github.com/philippbayer/Goodreads_visualization/master/Books_read_by_weekday.png)
 
 Monday is procrastination day.
 
