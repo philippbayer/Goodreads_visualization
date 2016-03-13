@@ -54,6 +54,23 @@ Parses the weekday a "book read" has been added, counts them
 
 Monday is procrastination day.
 
+## generateReviews.py
+
+Tiny script that uses a simple Markov Chain and the review text as created by plotWordCloud.py to generate new reviews.
+
+Some examples:
+
+* “natural” death, almost by definition, means something slow, smelly and painful
+* a kind of cyborg, saved by the master was plagued in his work - for that i'm getting angry again just typing this - some are of exactly the opposite, and of black holes
+* american actress wikipedia tells me) once said: "a critic never fights the battle; they just read, focus on his own goshawk 50 years
+* he always wanted to do something, and i don't know how accurate he is
+* not recommended for: people who, if they can't be reduced to a small essay
+* machiavelli summarises quite a bit like reading a 120 pages summary of the helmet of horror
+* - no supervisor, no grant attached to a beautiful suicide and now i cleared my mind of circe's orders -cramping my style, urging me not to write the paper
+* not being focused on useless mobile apps, but on medical companies that treat death as a sign of dissent
+
+*why does this work so well*
+
 
 Some other ideas for things to do with this:
 

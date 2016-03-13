@@ -9,7 +9,6 @@ if __name__ == '__main__':
     fh = open('./goodreads_export.csv')
     reader = csv.reader(fh)
     header = reader.next()
-    print header
     position_rating = header.index('My Rating')
     position_pages = header.index('Number of Pages')
 

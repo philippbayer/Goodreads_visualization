@@ -25,6 +25,7 @@ def replace_by_space(word):
     return ''.join(new)
 
 all_my_words = []
+all_my_words_with_stop_words = []
 
 fh = open('./goodreads_export.csv')
 reader = csv.reader(fh)
@@ -41,6 +42,7 @@ for ll in reader:
     # clean strings
     cleaned_review = re.sub(html_clean, '', review)
     cleaned_review = re.sub(gr_clean, '', cleaned_review)
+    all_my_words_with_stop_words += cleaned_review
     cleaned_review = replace_by_space(cleaned_review)
     cleaned_review = filter(lambda x: x in PRINTABLE, cleaned_review)
     # clean words
@@ -51,6 +53,12 @@ for ll in reader:
     reviews += 1
 
 print("You have %s words in %s reviews"%(words, reviews))
+
+# write out word to disk for Markov chain
+all_my_words_with_stop_words = ''.join(all_my_words_with_stop_words)
+with open("All_review_words.txt","w") as f:
+    f.write(all_my_words_with_stop_words + "\n")
+
 # WordCloud takes only string, no list/set
 wordcloud = WordCloud(max_font_size=200, width=800, height=500).generate(' '.join(all_my_words))
 wordcloud.to_file("GR_wordcloud.png")
