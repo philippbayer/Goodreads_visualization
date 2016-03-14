@@ -75,6 +75,8 @@ This script also creates a graph of probabilities for word connections for the w
 
 ![chain_graph](https://raw.github.com/philippbayer/Goodreads_visualization/master/Markov_graph.png)
 
+I really wonder why it always forces the circular layout - it should connect from "translation" to "(i" which in turn connects to a few nodes
+
 ## Some other ideas
 
 - A Python-library that interacts with the goodreads csv - a lot of code in this repo repeats itself slightly

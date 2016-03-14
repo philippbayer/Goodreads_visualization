@@ -4,7 +4,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 
 with open('All_review_words.txt') as f:
-    all_text = ''.join(f.readlines())
+    all_text = unicode(''.join(f.readlines()), errors='ignore')
 
 mc = MarkovChain(dbFilePath='./markov_db')
 mc.generateDatabase(all_text)
@@ -36,15 +36,26 @@ G = nx.DiGraph()
 good_key = str(good_key[0])
 G.add_node(good_key)
 G.add_nodes_from(values.keys())
+# get the graph for one of the connected nodes
+# we go only one step deep - anything more and we'd better use recursion (but graph gets ugly then anyway)
+for v in values:
+    if (v,) in db and (len(db[(v,)]) < 20):
+        G.add_nodes_from(db[(v,)].keys())
+        for partner in db[(v,)]:
+            edge_weight = db[(v,)][partner]
+            G.add_weighted_edges_from([ (v, partner, edge_weight) ])
+        # for now, only add one
+        break
 
-all_edges = []
+
+# now add the edges of the "original" graph around "translation"
 for partner in values:
     edge_weight = values[partner]
-    all_edges.append(edge_weight)
     G.add_weighted_edges_from([ (good_key, partner, edge_weight) ])
 
-pos = nx.circular_layout(G)
-nx.draw_networkx_nodes(G, pos, node_color = 'white', node_size = 5000)
+pos = nx.spring_layout(G)
+
+nx.draw_networkx_nodes(G, pos, node_color = 'white', node_size = 2500)
 
 # width of edges is based on probability * 10
 for edge in G.edges(data=True):
