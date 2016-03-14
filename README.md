@@ -71,12 +71,15 @@ Some examples:
 
 *why does this work so well*
 
+This script also creates a graph of probabilities for word connections for the word "translation", the thicker the edge between the nodes, the higher the probability.
 
-Some other ideas for things to do with this:
+![chain_graph](https://raw.github.com/philippbayer/Goodreads_visualization/master/Markov_graph.png)
+
+## Some other ideas
 
 - A Python-library that interacts with the goodreads csv - a lot of code in this repo repeats itself slightly
 - Some people on goodreads have complained that their reviews disappear and I feel (but don't know) that I lost at least one, this tracks my exported CSV to check whether it actually happens. So far I haven't observed it.
-- Write automated parser that exports reviews to html/epub/tumblr/blogger/wordpress etc.
+- Write automated parser that exports reviews to html/epub/tumblr/blogger/wordpress etc. (note: support for this was recently added to goodreads)
 - cron job which automatically pulls exported CSV from https://www.goodreads.com/review_porter/goodreads_export.csv (login a bit weird esp. with Facebook login, use API instead? Needs dev key, but easier to do /review/list.xml=USERID than to play Red Queen with Facebook's oauth)
 - various visualization things in regards to language use
 
