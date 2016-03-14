@@ -52,5 +52,6 @@ for edge in G.edges(data=True):
 
 nx.draw_networkx_labels(G, pos, font_size=10, font_family='sans-serif')
 plt.axis("off")
+plt.tight_layout()
 plt.savefig("Markov_graph.png")
 plt.show()
