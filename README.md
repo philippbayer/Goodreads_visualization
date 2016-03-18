@@ -68,6 +68,7 @@ Some examples:
 * machiavelli summarises quite a bit like reading a 120 pages summary of the helmet of horror
 * - no supervisor, no grant attached to a beautiful suicide and now i cleared my mind of circe's orders -cramping my style, urging me not to write the paper
 * not being focused on useless mobile apps, but on medical companies that treat death as a sign of dissent
+* the harassment of irs-personnel to get into the dark cave
 
 *why does this work so well*
 
