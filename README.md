@@ -5,11 +5,11 @@ An ipython notebook to play around with Goodreads data and make some seaborn vis
 
 You can use it with your own data - go [here](https://www.goodreads.com/review/import) and press "Export your library" to get your own csv.
 
-The text you're reading is generated from a jupyter notebook by the Makefile. If you want to run it yourself, clone the repository, replace the path to my Goodreads exported file by yours in the ipynb file, and then run
+The text you're reading is generated from a jupyter notebook by the Makefile. If you want to run it yourself, clone the repository then run
 
     ipython3 notebook your_file.ipynb
     
-to get the interactive version.
+to get the interactive version. In there, replace the path to my Goodreads exported file by yours in the ipynb file, and then run click on Cell -> Run All.
 
 ## Dependencies
 
@@ -428,7 +428,7 @@ This script also creates a graph of probabilities for word connections for the w
     pylab.axis('off')
     pylab.show()
 
-    it's great fun if you're a man, it will be annoyed
+    and dirt and a cigarette
 
 
 
