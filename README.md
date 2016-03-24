@@ -1,63 +1,358 @@
-A collection of scripts to play around with goodreads data
 
-You can use it with your own data - go to [here](https://www.goodreads.com/review/import) and press "Export your library" to get your own csv, it should work out of the box with these scripts. Each script expects a "goodreads_export.csv" in the current folder (this may change), you can just replace that one with yours from goodreads, and then run any of these scripts.
+# Goodreads visualization
 
-# Scripts included:
+An ipython notebook to play around with Goodreads data and make some seaborn visualizations.
 
-## plotPagesVsRating.py
+You can use it with your own data - go [here](https://www.goodreads.com/review/import) and press "Export your library" to get your own csv.
+
+The text you're reading is generated from a jupyter notebook by the Makefile. If you want to run it yourself, clone the repository, replace the path to my Goodreads exported file by yours in the ipynb file, and then run
+
+    ipython3 notebook your_file.ipynb
+    
+to get the interactive version.
+
+## Dependencies
+
+* Python 3
+* Ipython3/Jupyter
+
+### Python packages
+
+* seaborn
+* pandas
+* wordcloud
+* nltk
+* networkx
+* pymarkovchain
+
+## Licenses
+
+License for reviews: CC-BY-SA 4.0
+Code: MIT
+
+OK, let's start!
+
+## Setting up the notebook
+
+
+    % pylab inline
+    
+    # for most plots
+    import pandas as pd
+    import seaborn as sns
+    from collections import defaultdict, Counter, OrderedDict
+    
+    # for time-related plots
+    import datetime
+    import calendar
+    
+    # for word cloud
+    import re
+    import string
+    from nltk.corpus import stopwords
+    from wordcloud import WordCloud
+    
+    # for Markov chain
+    from pymarkovchain import MarkovChain
+    import pickle
+    import networkx as nx
+    
+    sns.set_palette("coolwarm")
+    
+    # change some plotting defaults
+    rcParams["figure.figsize"] = [14, 9]
+    rcParams["axes.labelsize"] = 15.0
+    rcParams["axes.titlesize"] = 15.0
+    rcParams['xtick.labelsize'] = 15
+    rcParams['ytick.labelsize'] = 15
+    rcParams['font.size'] = 15
+
+    Populating the interactive namespace from numpy and matplotlib
+
+
+    :0: FutureWarning: IPython widgets are experimental and may change in the future.
+
+
+## Loading the data
+
+
+    df = pd.read_csv('./goodreads_export.csv')
+    # keep only books that have a rating (unrated books have a rating of 0, we don't need that)
+    cleaned_df = df[df["My Rating"] != 0]
+
+***
+
+## plot Pages vs Ratings
 
 Do I give longer books better scores? A minor tendency but nothing special (it's confounded by having just 5 possible numbers in ratings)
 
-![Number pages versus ratings](https://raw.github.com/philippbayer/Goodreads_visualization/master/Pages_vs_Ratings.png)
+
+    g = sns.jointplot("Number of Pages", "My Rating", data=cleaned_df, kind="reg", size=7, ylim=[0.5,5.5])
+
+
+![png](README_files/README_5_0.png)
+
 
 I seem to mostly read books at around 200 to 300 pages so it's hard to tell whether I give longer books better ratings. It's also a nice example that in regards to linear regression, a p-value as tiny as this one doesn't mean much, the r-value is still bad.
 
-## plotRatingsVsBookshelves.py
+***
 
-Parses ratings for books, makes a violin plot for the 7 categories with the most rated books:
+## plot Ratings vs Bookshelves
 
-![Ratings_by_Shelves](https://raw.github.com/philippbayer/Goodreads_visualization/master/categories_violinplot.png)
+Let's parse ratings for books and make a violin plot for the 7 categories with the most rated books!
+
+
+    CATEGORIES = 7 # number of most crowded categories to plot
+    
+    # we have to fiddle a bit - we have to count the ratings by category, 
+    # since each book can have several comma-delimited categories
+    # TODO: find a pandas-like way to do this
+    
+    shelves_ratings = defaultdict(list) # key: shelf-name, value: list of ratings
+    shelves_counter = Counter() # counts how many books on each shelf
+    
+    for index, row in cleaned_df.iterrows():
+        my_rating = row["My Rating"]
+        if my_rating == 0:
+            continue
+        if pd.isnull(row["Bookshelves"]):
+            continue
+    
+        shelves = row["Bookshelves"].split(",")
+    
+        for s in shelves:
+            # empty shelf?
+            if not s: continue
+            s = s.strip() # I had "non-fiction" and " non-fiction"
+            shelves_ratings[s].append(my_rating)
+            shelves_counter[s] += 10
+    
+    names = []
+    ratings = []
+    for name, _ in shelves_counter.most_common(10):
+        for number in shelves_ratings[name]:
+            names.append(name)
+            ratings.append(number)
+    
+    full_table = pd.DataFrame({"Category":names, "Rating":ratings})
+    
+    sns.violinplot(x = "Category", y = "Rating", data=full_table)
+    # older versions of seaborn throw up here with
+    # TypeError: violinplot() missing 1 required positional argument: 'vals'
+    pylab.show()
+
+
+![png](README_files/README_7_0.png)
+
 
 There is some *bad* SF out there.
 
+***
+
 ## plotHistogramDistanceRead.py
 
-Parses the "dates read" for each book read, plots the distance between books read in days - shows you how quickly you hop from book to book.
+Let's check the "dates read" for each book read and plot the distance between books read in days - shows you how quickly you hop from book to book.
 
-![Distance in days between books](https://raw.github.com/philippbayer/Goodreads_visualization/master/Histogram_Days_Read_Distance.png)
+
+    # first, transform to datetype and get rid of all invalid dates
+    dates = pd.to_datetime(cleaned_df["Date Read"])
+    dates = dates.dropna()
+    sorted_dates = sorted(dates)
+    
+    last_date = None
+    differences = []
+    all_days = []
+    for date in sorted_dates:
+        if not last_date:
+            last_date = date
+        difference = date - last_date
+        days = difference.days
+        all_days.append(days)
+        last_date = date
+    
+    sns.distplot(all_days, axlabel="Distance in days between books read")
+    pylab.show()
+
+
+![png](README_files/README_9_0.png)
+
 
 Of course, sometimes I just add several at once and guesstimate the correct "date read".
 
-## plotHeatmapDatesRead.py
+***
+
+## plot Heatmap of dates read
 
 Parses the "dates read" for each book read, bins them by month, and makes a heatmap to show in which months I read more than in others. Also makes a lineplot for books read, split up by year.
 
-![Heatmap books read per month](https://raw.github.com/philippbayer/Goodreads_visualization/master/Heatmap_Books_Read_Per_Month.png)
+
+    # we need a dataframe in this format:
+    # year months books_read
+    # I am sure there's some magic pandas function for this
+    
+    read_dict = defaultdict(int) # key: (year, month), value: count of books read
+    for date in sorted_dates:
+        this_year = date.year
+        this_month = date.month
+        read_dict[ (this_year, this_month) ] += 1
+    
+    first_date = sorted_dates[0]
+    
+    first_year = first_date.year
+    first_month = first_date.month
+    
+    todays_date = datetime.datetime.today()
+    todays_year = todays_date.year
+    todays_month = todays_date.month
+    
+    all_years = []
+    all_months = []
+    all_counts = []
+    for year in range(first_year, todays_year+1):
+        for month in range(1, 13):
+            if (year == todays_year) and month > todays_month:
+                # don't count future months
+                # it's 2015-12 now so a bit hard to test
+                break
+            this_count = read_dict[ (year, month) ]
+            all_years.append(year)
+            all_months.append(month)
+            all_counts.append(this_count)
+    
+    # now get it in the format heatmap() wants
+    df = pd.DataFrame( { "month":all_months, "year":all_years, "books_read":all_counts } )
+    dfp = df.pivot("month", "year", "books_read")
+    
+    # now make the heatmap
+    ax = sns.heatmap(dfp, annot=True)
+
+
+![png](README_files/README_11_0.png)
+
 
 What happened in May 2014?
 
-![Lineplot books read per month by year](https://raw.github.com/philippbayer/Goodreads_visualization/master/Lineplot_Books_Read_Per_Month_split_up_by_year.png)
+***
+
+## Plot books read by year
+
+
+    g = sns.FacetGrid(df, col="year", sharey=True, sharex=True) 
+    g.map(plt.plot, "month", "books_read")
+    g.set_ylabels("Books read")
+    g.set_xlabels("Month")
+    pylab.xlim(1, 12)
+    pylab.show()
+
+
+![png](README_files/README_13_0.png)
+
 
 It's nice how reading behaviour (Goodreads usage) connects over the months - it slowly in 2013, stays constant in 2014/2015, and now goes down again.
 
-## plotWordCloud.py
+***
 
-This one removes noisy words and creates a word-cloud of most commonly used words in the reviews:
+## plot Word Cloud
 
-![wordcloud](https://raw.github.com/philippbayer/Goodreads_visualization/master/GR_wordcloud.png)
 
-## plotBooksreadVsWeekday.py
+This one removes noisy words and creates a word-cloud of most commonly used words in the reviews.
 
-Parses the weekday a "book read" has been added, counts them
 
-![wordcloud](https://raw.github.com/philippbayer/Goodreads_visualization/master/Books_read_by_weekday.png)
+    def replace_by_space(word):
+        new = []
+        for letter in word:
+            if letter in REMOVE:
+                new.append(' ')
+            else:
+                new.append(letter)
+        return ''.join(new)
+    
+    STOP = stopwords.words("english")
+    html_clean = re.compile('<.*?>')
+    gr_clean = re.compile('\[.*?\]')
+    PRINTABLE = string.printable
+    REMOVE = set(["!","(",")",":",".",";",",",'"',"?","-",">","_"])
+    
+    all_my_words = []
+    all_my_words_with_stop_words = []
+    
+    reviews = cleaned_df["My Review"]
+    
+    num_reviews = 0
+    num_words = 0
+    for row in reviews:
+        if pd.isnull(row):
+            continue
+        review = row.lower()
+        if not review:
+            # empty review
+            continue
+        # clean strings
+        cleaned_review = re.sub(html_clean, '', review)
+        cleaned_review = re.sub(gr_clean, '', cleaned_review)
+        all_my_words_with_stop_words += cleaned_review
+        cleaned_review = replace_by_space(cleaned_review)
+        cleaned_review = "".join(filter(lambda x: x in PRINTABLE, cleaned_review))
+        # clean words
+        cleaned_review = cleaned_review.split()
+        cleaned_review = list(filter(lambda x: x not in STOP, cleaned_review))
+        num_words += len(cleaned_review)
+        all_my_words += cleaned_review
+        num_reviews += 1
+    
+    print("You have %s words in %s reviews"%(num_words, num_reviews))
+    
+    # we need all words later for the Markov chain
+    all_my_words_with_stop_words = ''.join(all_my_words_with_stop_words)
+    
+    # WordCloud takes only string, no list/set
+    wordcloud = WordCloud(max_font_size=200, width=800, height=500).generate(' '.join(all_my_words))
+    pylab.imshow(wordcloud)
+    pylab.axis("off")
+    pylab.show()
+
+    You have 39254 words in 286 reviews
+
+
+
+![png](README_files/README_15_1.png)
+
+
+***
+
+## plot books read vs. week-day
+
+Let's parse the weekday a "book read" has been added and count them
+
+
+    # initialize the dict in the correct order
+    read_dict = OrderedDict() # key: weekday, value: count of books read
+    for day in range(0,7):
+        read_dict[calendar.day_name[day]] = 0
+    
+    for date in sorted_dates:
+        weekday_name = calendar.day_name[date.weekday()]  # Sunday
+        read_dict[weekday_name] += 1
+    
+    full_table = pd.DataFrame({"Weekday":list(read_dict.keys()), "Books read":list(read_dict.values())})
+    
+    sns.barplot(x="Weekday", y="Books read", data=full_table)
+    plt.tight_layout()
+    plt.savefig("Books_read_by_weekday.png")
+    plt.show()
+
+
+
+![png](README_files/README_17_0.png)
+
 
 Monday is procrastination day.
 
-## generateReviews.py
+***
+
+## Generate Reviews
 
 Tiny script that uses a simple Markov Chain and the review text as created by plotWordCloud.py to generate new reviews.
-
 Some examples:
 
 * “natural” death, almost by definition, means something slow, smelly and painful
@@ -74,9 +369,75 @@ Some examples:
 
 This script also creates a graph of probabilities for word connections for the word "translation", the thicker the edge between the nodes, the higher the probability.
 
-![chain_graph](https://raw.github.com/philippbayer/Goodreads_visualization/master/Markov_graph.png)
 
-I really wonder why it always forces the circular layout - it should connect from "translation" to "(i" which in turn connects to a few nodes
+    mc = MarkovChain(dbFilePath='./markov_db')
+    mc.generateDatabase(all_my_words_with_stop_words)
+    
+    print(mc.generateString())
+    
+    mc.dumpdb()
+    
+    # a key in the datbase looks like:
+    # ('when', 'you') defaultdict(<function _one at 0x7f5c843a4500>, 
+    # {'just': 0.06250000000059731, 'feel': 0.06250000000059731, 'had': 0.06250000000059731, 'accidentally': 0.06250000000059731, ''love': 0.06250000000059731, 'read': 0.06250000000059731, 'see': 0.06250000000059731, 'base': 0.06250000000059731, 'know': 0.12499999999641617, 'have': 0.12499999999641617, 'were': 0.06250000000059731, 'come': 0.06250000000059731, 'can't': 0.06250000000059731, 'are': 0.06250000000059731})
+    # so 'just' follows after 'when you' with 6% probability
+    
+    db = pickle.load(open('./markov_db', 'rb'))
+    # let's get a good node
+    #for key in db:
+    #    # has in between 5 and 10 connections
+    #    if len(db[key]) > 5 and (len(db[key]) < 10):
+    #        if len(set(db[key].values())) > 2:
+    #            print key, set(db[key].values())
+    
+    # manually chosen from above
+    good_key = ('translation',)
+    values = db[good_key]
+    
+    # create the graph
+    
+    G = nx.DiGraph()
+    good_key = str(good_key[0])
+    G.add_node(good_key)
+    G.add_nodes_from(values.keys())
+    # get the graph for one of the connected nodes
+    # we go only one step deep - anything more and we'd better use recursion (but graph gets ugly then anyway)
+    for v in values:
+        if (v,) in db and (len(db[(v,)]) < 20):
+            G.add_nodes_from(db[(v,)].keys())
+            for partner in db[(v,)]:
+                edge_weight = db[(v,)][partner]
+                G.add_weighted_edges_from([ (v, partner, edge_weight) ])
+            # for now, only add one
+            break
+    
+    # now add the edges of the "original" graph around "translation"
+    for partner in values:
+        edge_weight = values[partner]
+        G.add_weighted_edges_from([ (good_key, partner, edge_weight) ])
+    
+    pos = nx.spring_layout(G)
+    
+    nx.draw_networkx_nodes(G, pos, node_color = 'white', node_size = 2500)
+    
+    # width of edges is based on probability * 10
+    for edge in G.edges(data=True):
+        nx.draw_networkx_edges(G, pos, edgelist = [(edge[0], edge[1])], width = edge[2]['weight']*10)
+    
+    nx.draw_networkx_labels(G, pos, font_size=10, font_family='sans-serif')
+    pylab.axis('off')
+    pylab.show()
+
+    it's great fun if you're a man, it will be annoyed
+
+
+
+![png](README_files/README_19_1.png)
+
+
+I really wonder why it always forces the circular layout - it should connect from "translation" to "(i" which in turn connects to a few nodes.
+
+***
 
 ## Some other ideas
 
@@ -85,6 +446,3 @@ I really wonder why it always forces the circular layout - it should connect fro
 - Write automated parser that exports reviews to html/epub/tumblr/blogger/wordpress etc. (note: support for this was recently added to goodreads)
 - cron job which automatically pulls exported CSV from https://www.goodreads.com/review_porter/goodreads_export.csv (login a bit weird esp. with Facebook login, use API instead? Needs dev key, but easier to do /review/list.xml=USERID than to play Red Queen with Facebook's oauth)
 - various visualization things in regards to language use
-
-License for reviews: CC-BY-SA 4.0
-Code: MIT
