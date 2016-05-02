@@ -35,50 +35,57 @@ OK, let's start!
 ## Setting up the notebook
 
 
-    % pylab inline
-    
-    # for most plots
-    import pandas as pd
-    import seaborn as sns
-    from collections import defaultdict, Counter, OrderedDict
-    
-    # for time-related plots
-    import datetime
-    import calendar
-    
-    # for word cloud
-    import re
-    import string
-    from nltk.corpus import stopwords
-    from wordcloud import WordCloud
-    
-    # for Markov chain
-    from pymarkovchain import MarkovChain
-    import pickle
-    import networkx as nx
-    
-    sns.set_palette("coolwarm")
-    
-    # change some plotting defaults
-    rcParams["figure.figsize"] = [14, 9]
-    rcParams["axes.labelsize"] = 15.0
-    rcParams["axes.titlesize"] = 15.0
-    rcParams['xtick.labelsize'] = 15
-    rcParams['ytick.labelsize'] = 15
-    rcParams['font.size'] = 15
+```python
+% pylab inline
+
+# for most plots
+import pandas as pd
+import seaborn as sns
+from collections import defaultdict, Counter, OrderedDict
+
+# for time-related plots
+import datetime
+import calendar
+
+# for word cloud
+import re
+import string
+from nltk.corpus import stopwords
+from wordcloud import WordCloud
+
+# for Markov chain
+from pymarkovchain import MarkovChain
+import pickle
+import networkx as nx
+
+sns.set_palette("coolwarm")
+
+# change some plotting defaults
+rcParams["figure.figsize"] = [14, 9]
+rcParams["axes.labelsize"] = 15.0
+rcParams["axes.titlesize"] = 15.0
+rcParams['xtick.labelsize'] = 15
+rcParams['ytick.labelsize'] = 15
+rcParams['font.size'] = 15
+```
 
     Populating the interactive namespace from numpy and matplotlib
 
 
-    :0: FutureWarning: IPython widgets are experimental and may change in the future.
+    /usr/lib/python2.7/site-packages/IPython/utils/traitlets.py:5: UserWarning: IPython.utils.traitlets has moved to a top-level traitlets package.
+      warn("IPython.utils.traitlets has moved to a top-level traitlets package.")
+    /usr/lib/python2.7/site-packages/IPython/kernel/__init__.py:13: ShimWarning: The `IPython.kernel` package has been deprecated. You should import from ipykernel or jupyter_client instead.
+      "You should import from ipykernel or jupyter_client instead.", ShimWarning)
 
 
 ## Loading the data
 
 
-    df = pd.read_csv('./goodreads_export.csv')
-    # keep only books that have a rating (unrated books have a rating of 0, we don't need that)
-    cleaned_df = df[df["My Rating"] != 0]
+```python
+df = pd.read_csv('./goodreads_export.csv')
+# keep only books that have a rating (unrated books have a rating of 0, we don't need that)
+cleaned_df = df[df["My Rating"] != 0]
+```
 
 ***
 
@@ -87,10 +94,16 @@ OK, let's start!
 Do I give longer books better scores? A minor tendency but nothing special (it's confounded by having just 5 possible numbers in ratings)
 
 
-    g = sns.jointplot("Number of Pages", "My Rating", data=cleaned_df, kind="reg", size=7, ylim=[0.5,5.5])
+```python
+g = sns.jointplot("Number of Pages", "My Rating", data=cleaned_df, kind="reg", size=7, ylim=[0.5,5.5])
+```
+
+    /usr/lib64/python2.7/site-packages/matplotlib/collections.py:590: FutureWarning: elementwise comparison failed; returning scalar instead, but in the future will perform elementwise comparison
+      if self._edgecolors == str('face'):
 
 
-![png](README_files/README_5_0.png)
+
+![png](README_files/README_5_1.png)
 
 
 I seem to mostly read books at around 200 to 300 pages so it's hard to tell whether I give longer books better ratings. It's also a nice example that in regards to linear regression, a p-value as tiny as this one doesn't mean much, the r-value is still bad.
@@ -102,44 +115,46 @@ I seem to mostly read books at around 200 to 300 pages so it's hard to tell whet
 Let's parse ratings for books and make a violin plot for the 7 categories with the most rated books!
 
 
-    CATEGORIES = 7 # number of most crowded categories to plot
-    
-    # we have to fiddle a bit - we have to count the ratings by category, 
-    # since each book can have several comma-delimited categories
-    # TODO: find a pandas-like way to do this
-    
-    shelves_ratings = defaultdict(list) # key: shelf-name, value: list of ratings
-    shelves_counter = Counter() # counts how many books on each shelf
-    
-    for index, row in cleaned_df.iterrows():
-        my_rating = row["My Rating"]
-        if my_rating == 0:
-            continue
-        if pd.isnull(row["Bookshelves"]):
-            continue
-    
-        shelves = row["Bookshelves"].split(",")
-    
-        for s in shelves:
-            # empty shelf?
-            if not s: continue
-            s = s.strip() # I had "non-fiction" and " non-fiction"
-            shelves_ratings[s].append(my_rating)
-            shelves_counter[s] += 10
-    
-    names = []
-    ratings = []
-    for name, _ in shelves_counter.most_common(10):
-        for number in shelves_ratings[name]:
-            names.append(name)
-            ratings.append(number)
-    
-    full_table = pd.DataFrame({"Category":names, "Rating":ratings})
-    
-    sns.violinplot(x = "Category", y = "Rating", data=full_table)
-    # older versions of seaborn throw up here with
-    # TypeError: violinplot() missing 1 required positional argument: 'vals'
-    pylab.show()
+```python
+CATEGORIES = 7 # number of most crowded categories to plot
+
+# we have to fiddle a bit - we have to count the ratings by category, 
+# since each book can have several comma-delimited categories
+# TODO: find a pandas-like way to do this
+
+shelves_ratings = defaultdict(list) # key: shelf-name, value: list of ratings
+shelves_counter = Counter() # counts how many books on each shelf
+
+for index, row in cleaned_df.iterrows():
+    my_rating = row["My Rating"]
+    if my_rating == 0:
+        continue
+    if pd.isnull(row["Bookshelves"]):
+        continue
+
+    shelves = row["Bookshelves"].split(",")
+
+    for s in shelves:
+        # empty shelf?
+        if not s: continue
+        s = s.strip() # I had "non-fiction" and " non-fiction"
+        shelves_ratings[s].append(my_rating)
+        shelves_counter[s] += 10
+
+names = []
+ratings = []
+for name, _ in shelves_counter.most_common(CATEGORIES):
+    for number in shelves_ratings[name]:
+        names.append(name)
+        ratings.append(number)
+
+full_table = pd.DataFrame({"Category":names, "Rating":ratings})
+
+sns.violinplot(x = "Category", y = "Rating", data=full_table)
+# older versions of seaborn throw up here with
+# TypeError: violinplot() missing 1 required positional argument: 'vals'
+pylab.show()
+```
 
 
 ![png](README_files/README_7_0.png)
@@ -154,24 +169,26 @@ There is some *bad* SF out there.
 Let's check the "dates read" for each book read and plot the distance between books read in days - shows you how quickly you hop from book to book.
 
 
-    # first, transform to datetype and get rid of all invalid dates
-    dates = pd.to_datetime(cleaned_df["Date Read"])
-    dates = dates.dropna()
-    sorted_dates = sorted(dates)
-    
-    last_date = None
-    differences = []
-    all_days = []
-    for date in sorted_dates:
-        if not last_date:
-            last_date = date
-        difference = date - last_date
-        days = difference.days
-        all_days.append(days)
+```python
+# first, transform to datetype and get rid of all invalid dates
+dates = pd.to_datetime(cleaned_df["Date Read"])
+dates = dates.dropna()
+sorted_dates = sorted(dates)
+
+last_date = None
+differences = []
+all_days = []
+for date in sorted_dates:
+    if not last_date:
         last_date = date
-    
-    sns.distplot(all_days, axlabel="Distance in days between books read")
-    pylab.show()
+    difference = date - last_date
+    days = difference.days
+    all_days.append(days)
+    last_date = date
+
+sns.distplot(all_days, axlabel="Distance in days between books read")
+pylab.show()
+```
 
 
 ![png](README_files/README_9_0.png)
@@ -186,45 +203,47 @@ Of course, sometimes I just add several at once and guesstimate the correct "dat
 Parses the "dates read" for each book read, bins them by month, and makes a heatmap to show in which months I read more than in others. Also makes a lineplot for books read, split up by year.
 
 
-    # we need a dataframe in this format:
-    # year months books_read
-    # I am sure there's some magic pandas function for this
-    
-    read_dict = defaultdict(int) # key: (year, month), value: count of books read
-    for date in sorted_dates:
-        this_year = date.year
-        this_month = date.month
-        read_dict[ (this_year, this_month) ] += 1
-    
-    first_date = sorted_dates[0]
-    
-    first_year = first_date.year
-    first_month = first_date.month
-    
-    todays_date = datetime.datetime.today()
-    todays_year = todays_date.year
-    todays_month = todays_date.month
-    
-    all_years = []
-    all_months = []
-    all_counts = []
-    for year in range(first_year, todays_year+1):
-        for month in range(1, 13):
-            if (year == todays_year) and month > todays_month:
-                # don't count future months
-                # it's 2015-12 now so a bit hard to test
-                break
-            this_count = read_dict[ (year, month) ]
-            all_years.append(year)
-            all_months.append(month)
-            all_counts.append(this_count)
-    
-    # now get it in the format heatmap() wants
-    df = pd.DataFrame( { "month":all_months, "year":all_years, "books_read":all_counts } )
-    dfp = df.pivot("month", "year", "books_read")
-    
-    # now make the heatmap
-    ax = sns.heatmap(dfp, annot=True)
+```python
+# we need a dataframe in this format:
+# year months books_read
+# I am sure there's some magic pandas function for this
+
+read_dict = defaultdict(int) # key: (year, month), value: count of books read
+for date in sorted_dates:
+    this_year = date.year
+    this_month = date.month
+    read_dict[ (this_year, this_month) ] += 1
+
+first_date = sorted_dates[0]
+
+first_year = first_date.year
+first_month = first_date.month
+
+todays_date = datetime.datetime.today()
+todays_year = todays_date.year
+todays_month = todays_date.month
+
+all_years = []
+all_months = []
+all_counts = []
+for year in range(first_year, todays_year+1):
+    for month in range(1, 13):
+        if (year == todays_year) and month > todays_month:
+            # don't count future months
+            # it's 2015-12 now so a bit hard to test
+            break
+        this_count = read_dict[ (year, month) ]
+        all_years.append(year)
+        all_months.append(month)
+        all_counts.append(this_count)
+
+# now get it in the format heatmap() wants
+df = pd.DataFrame( { "month":all_months, "year":all_years, "books_read":all_counts } )
+dfp = df.pivot("month", "year", "books_read")
+
+# now make the heatmap
+ax = sns.heatmap(dfp, annot=True)
+```
 
 
 ![png](README_files/README_11_0.png)
@@ -237,12 +256,14 @@ What happened in May 2014?
 ## Plot books read by year
 
 
-    g = sns.FacetGrid(df, col="year", sharey=True, sharex=True) 
-    g.map(plt.plot, "month", "books_read")
-    g.set_ylabels("Books read")
-    g.set_xlabels("Month")
-    pylab.xlim(1, 12)
-    pylab.show()
+```python
+g = sns.FacetGrid(df, col="year", sharey=True, sharex=True) 
+g.map(plt.plot, "month", "books_read")
+g.set_ylabels("Books read")
+g.set_xlabels("Month")
+pylab.xlim(1, 12)
+pylab.show()
+```
 
 
 ![png](README_files/README_13_0.png)
@@ -258,64 +279,70 @@ It's nice how reading behaviour (Goodreads usage) connects over the months - it 
 This one removes noisy words and creates a word-cloud of most commonly used words in the reviews.
 
 
-    def replace_by_space(word):
-        new = []
-        for letter in word:
-            if letter in REMOVE:
-                new.append(' ')
-            else:
-                new.append(letter)
-        return ''.join(new)
-    
-    STOP = stopwords.words("english")
-    html_clean = re.compile('<.*?>')
-    gr_clean = re.compile('\[.*?\]')
-    PRINTABLE = string.printable
-    REMOVE = set(["!","(",")",":",".",";",",",'"',"?","-",">","_"])
-    
-    all_my_words = []
-    all_my_words_with_stop_words = []
-    
-    reviews = cleaned_df["My Review"]
-    
-    num_reviews = 0
-    num_words = 0
-    for row in reviews:
-        if pd.isnull(row):
-            continue
-        review = row.lower()
-        if not review:
-            # empty review
-            continue
-        # clean strings
-        cleaned_review = re.sub(html_clean, '', review)
-        cleaned_review = re.sub(gr_clean, '', cleaned_review)
-        all_my_words_with_stop_words += cleaned_review
-        cleaned_review = replace_by_space(cleaned_review)
-        cleaned_review = "".join(filter(lambda x: x in PRINTABLE, cleaned_review))
-        # clean words
-        cleaned_review = cleaned_review.split()
-        cleaned_review = list(filter(lambda x: x not in STOP, cleaned_review))
-        num_words += len(cleaned_review)
-        all_my_words += cleaned_review
-        num_reviews += 1
-    
-    print("You have %s words in %s reviews"%(num_words, num_reviews))
-    
-    # we need all words later for the Markov chain
-    all_my_words_with_stop_words = ''.join(all_my_words_with_stop_words)
-    
-    # WordCloud takes only string, no list/set
-    wordcloud = WordCloud(max_font_size=200, width=800, height=500).generate(' '.join(all_my_words))
-    pylab.imshow(wordcloud)
-    pylab.axis("off")
-    pylab.show()
+```python
+def replace_by_space(word):
+    new = []
+    for letter in word:
+        if letter in REMOVE:
+            new.append(' ')
+        else:
+            new.append(letter)
+    return ''.join(new)
 
-    You have 39254 words in 286 reviews
+STOP = stopwords.words("english")
+html_clean = re.compile('<.*?>')
+gr_clean = re.compile('\[.*?\]')
+PRINTABLE = string.printable
+REMOVE = set(["!","(",")",":",".",";",",",'"',"?","-",">","_"])
+
+all_my_words = []
+all_my_words_with_stop_words = []
+
+reviews = cleaned_df["My Review"]
+
+num_reviews = 0
+num_words = 0
+for row in reviews:
+    if pd.isnull(row):
+        continue
+    review = row.lower()
+    if not review:
+        # empty review
+        continue
+    # clean strings
+    cleaned_review = re.sub(html_clean, '', review)
+    cleaned_review = re.sub(gr_clean, '', cleaned_review)
+    all_my_words_with_stop_words += cleaned_review
+    cleaned_review = replace_by_space(cleaned_review)
+    cleaned_review = "".join(filter(lambda x: x in PRINTABLE, cleaned_review))
+    # clean words
+    cleaned_review = cleaned_review.split()
+    cleaned_review = list(filter(lambda x: x not in STOP, cleaned_review))
+    num_words += len(cleaned_review)
+    all_my_words += cleaned_review
+    num_reviews += 1
+
+print("You have %s words in %s reviews"%(num_words, num_reviews))
+
+# we need all words later for the Markov chain
+all_my_words_with_stop_words = ''.join(all_my_words_with_stop_words)
+
+# WordCloud takes only string, no list/set
+wordcloud = WordCloud(max_font_size=200, width=800, height=500).generate(' '.join(all_my_words))
+pylab.imshow(wordcloud)
+pylab.axis("off")
+pylab.show()
+```
+
+    You have 41906 words in 300 reviews
+
+
+    /usr/lib64/python2.7/site-packages/PIL/ImageDraw.py:104: UserWarning: setfont() is deprecated. Please set the attribute directly instead.
+      "Please set the attribute directly instead.")
 
 
 
-![png](README_files/README_15_1.png)
+![png](README_files/README_15_2.png)
 
 
 ***
@@ -325,22 +352,23 @@ This one removes noisy words and creates a word-cloud of most commonly used word
 Let's parse the weekday a "book read" has been added and count them
 
 
-    # initialize the dict in the correct order
-    read_dict = OrderedDict() # key: weekday, value: count of books read
-    for day in range(0,7):
-        read_dict[calendar.day_name[day]] = 0
-    
-    for date in sorted_dates:
-        weekday_name = calendar.day_name[date.weekday()]  # Sunday
-        read_dict[weekday_name] += 1
-    
-    full_table = pd.DataFrame({"Weekday":list(read_dict.keys()), "Books read":list(read_dict.values())})
-    
-    sns.barplot(x="Weekday", y="Books read", data=full_table)
-    plt.tight_layout()
-    plt.savefig("Books_read_by_weekday.png")
-    plt.show()
+```python
+# initialize the dict in the correct order
+read_dict = OrderedDict() # key: weekday, value: count of books read
+for day in range(0,7):
+    read_dict[calendar.day_name[day]] = 0
 
+for date in sorted_dates:
+    weekday_name = calendar.day_name[date.weekday()]  # Sunday
+    read_dict[weekday_name] += 1
+
+full_table = pd.DataFrame({"Weekday":list(read_dict.keys()), "Books read":list(read_dict.values())})
+
+sns.barplot(x="Weekday", y="Books read", data=full_table)
+plt.tight_layout()
+plt.show()
+
+```
 
 
 ![png](README_files/README_17_0.png)
@@ -370,69 +398,75 @@ Some examples:
 This script also creates a graph of probabilities for word connections for the word "translation", the thicker the edge between the nodes, the higher the probability.
 
 
-    mc = MarkovChain(dbFilePath='./markov_db')
-    mc.generateDatabase(all_my_words_with_stop_words)
-    
-    print(mc.generateString())
-    
-    mc.dumpdb()
-    
-    # a key in the datbase looks like:
-    # ('when', 'you') defaultdict(<function _one at 0x7f5c843a4500>, 
-    # {'just': 0.06250000000059731, 'feel': 0.06250000000059731, 'had': 0.06250000000059731, 'accidentally': 0.06250000000059731, ''love': 0.06250000000059731, 'read': 0.06250000000059731, 'see': 0.06250000000059731, 'base': 0.06250000000059731, 'know': 0.12499999999641617, 'have': 0.12499999999641617, 'were': 0.06250000000059731, 'come': 0.06250000000059731, 'can't': 0.06250000000059731, 'are': 0.06250000000059731})
-    # so 'just' follows after 'when you' with 6% probability
-    
-    db = pickle.load(open('./markov_db', 'rb'))
-    # let's get a good node
-    #for key in db:
-    #    # has in between 5 and 10 connections
-    #    if len(db[key]) > 5 and (len(db[key]) < 10):
-    #        if len(set(db[key].values())) > 2:
-    #            print key, set(db[key].values())
-    
-    # manually chosen from above
-    good_key = ('translation',)
-    values = db[good_key]
-    
-    # create the graph
-    
-    G = nx.DiGraph()
-    good_key = str(good_key[0])
-    G.add_node(good_key)
-    G.add_nodes_from(values.keys())
-    # get the graph for one of the connected nodes
-    # we go only one step deep - anything more and we'd better use recursion (but graph gets ugly then anyway)
-    for v in values:
-        if (v,) in db and (len(db[(v,)]) < 20):
-            G.add_nodes_from(db[(v,)].keys())
-            for partner in db[(v,)]:
-                edge_weight = db[(v,)][partner]
-                G.add_weighted_edges_from([ (v, partner, edge_weight) ])
-            # for now, only add one
-            break
-    
-    # now add the edges of the "original" graph around "translation"
-    for partner in values:
-        edge_weight = values[partner]
-        G.add_weighted_edges_from([ (good_key, partner, edge_weight) ])
-    
-    pos = nx.spring_layout(G)
-    
-    nx.draw_networkx_nodes(G, pos, node_color = 'white', node_size = 2500)
-    
-    # width of edges is based on probability * 10
-    for edge in G.edges(data=True):
-        nx.draw_networkx_edges(G, pos, edgelist = [(edge[0], edge[1])], width = edge[2]['weight']*10)
-    
-    nx.draw_networkx_labels(G, pos, font_size=10, font_family='sans-serif')
-    pylab.axis('off')
-    pylab.show()
+```python
+mc = MarkovChain(dbFilePath='./markov_db')
+mc.generateDatabase(all_my_words_with_stop_words)
 
-    and dirt and a cigarette
+print(mc.generateString())
+
+mc.dumpdb()
+
+# a key in the datbase looks like:
+# ('when', 'you') defaultdict(<function _one at 0x7f5c843a4500>, 
+# {'just': 0.06250000000059731, 'feel': 0.06250000000059731, 'had': 0.06250000000059731, 'accidentally': 0.06250000000059731, ''love': 0.06250000000059731, 'read': 0.06250000000059731, 'see': 0.06250000000059731, 'base': 0.06250000000059731, 'know': 0.12499999999641617, 'have': 0.12499999999641617, 'were': 0.06250000000059731, 'come': 0.06250000000059731, 'can't': 0.06250000000059731, 'are': 0.06250000000059731})
+# so 'just' follows after 'when you' with 6% probability
+
+db = pickle.load(open('./markov_db', 'rb'))
+# let's get a good node
+#for key in db:
+#    # has in between 5 and 10 connections
+#    if len(db[key]) > 5 and (len(db[key]) < 10):
+#        if len(set(db[key].values())) > 2:
+#            print key, set(db[key].values())
+
+# manually chosen from above
+good_key = ('translation',)
+values = db[good_key]
+
+# create the graph
+
+G = nx.DiGraph()
+good_key = str(good_key[0])
+G.add_node(good_key)
+G.add_nodes_from(values.keys())
+# get the graph for one of the connected nodes
+# we go only one step deep - anything more and we'd better use recursion (but graph gets ugly then anyway)
+for v in values:
+    if (v,) in db and (len(db[(v,)]) < 20):
+        G.add_nodes_from(db[(v,)].keys())
+        for partner in db[(v,)]:
+            edge_weight = db[(v,)][partner]
+            G.add_weighted_edges_from([ (v, partner, edge_weight) ])
+        # for now, only add one
+        break
+
+# now add the edges of the "original" graph around "translation"
+for partner in values:
+    edge_weight = values[partner]
+    G.add_weighted_edges_from([ (good_key, partner, edge_weight) ])
+
+pos = nx.spring_layout(G)
+
+nx.draw_networkx_nodes(G, pos, node_color = 'white', node_size = 2500)
+
+# width of edges is based on probability * 10
+for edge in G.edges(data=True):
+    nx.draw_networkx_edges(G, pos, edgelist = [(edge[0], edge[1])], width = edge[2]['weight']*10)
+
+nx.draw_networkx_labels(G, pos, font_size=10, font_family='sans-serif')
+pylab.axis('off')
+pylab.show()
+```
+
+    recommended for: invincible heartless space robots with rockets for feelingsa fun book, and it fits in with the deadline being in constant contact with users and co-developers - most think he's either a jew or a trainride
+
+
+    /usr/lib64/python2.7/site-packages/matplotlib/collections.py:650: FutureWarning: elementwise comparison failed; returning scalar instead, but in the future will perform elementwise comparison
+      if self._edgecolors_original != str('face'):
 
 
 
-![png](README_files/README_19_1.png)
+![png](README_files/README_19_2.png)
 
 
 I really wonder why it always forces the circular layout - it should connect from "translation" to "(i" which in turn connects to a few nodes.

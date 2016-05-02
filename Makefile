@@ -1,2 +1,2 @@
 all:
-	ipython nbconvert --to markdown README.ipynb 
+	jupyter nbconvert --to markdown README.ipynb 
