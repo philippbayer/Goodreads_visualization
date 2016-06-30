@@ -69,13 +69,13 @@ rcParams['ytick.labelsize'] = 15
 rcParams['font.size'] = 15
 ```
 
-    Populating the interactive namespace from numpy and matplotlib
-
-
     /usr/lib/python2.7/site-packages/IPython/utils/traitlets.py:5: UserWarning: IPython.utils.traitlets has moved to a top-level traitlets package.
       warn("IPython.utils.traitlets has moved to a top-level traitlets package.")
     /usr/lib/python2.7/site-packages/IPython/kernel/__init__.py:13: ShimWarning: The `IPython.kernel` package has been deprecated. You should import from ipykernel or jupyter_client instead.
       "You should import from ipykernel or jupyter_client instead.", ShimWarning)
+
+
+    Populating the interactive namespace from numpy and matplotlib
 
 
 ## Loading the data
@@ -334,7 +334,7 @@ pylab.axis("off")
 pylab.show()
 ```
 
-    You have 41906 words in 300 reviews
+    You have 43487 words in 313 reviews
 
 
     /usr/lib64/python2.7/site-packages/PIL/ImageDraw.py:104: UserWarning: setfont() is deprecated. Please set the attribute directly instead.
@@ -458,7 +458,7 @@ pylab.axis('off')
 pylab.show()
 ```
 
-    recommended for: invincible heartless space robots with rockets for feelingsa fun book, and it fits in with the deadline being in constant contact with users and co-developers - most think he's either a jew or a trainride
+    there are too brutal for most biologists
 
 
     /usr/lib64/python2.7/site-packages/matplotlib/collections.py:650: FutureWarning: elementwise comparison failed; returning scalar instead, but in the future will perform elementwise comparison
