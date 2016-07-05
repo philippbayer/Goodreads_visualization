@@ -43,6 +43,9 @@ import pandas as pd
 import seaborn as sns
 from collections import defaultdict, Counter, OrderedDict
 
+# for stats
+import scipy.stats
+
 # for time-related plots
 import datetime
 import calendar
@@ -69,12 +72,6 @@ rcParams['ytick.labelsize'] = 15
 rcParams['font.size'] = 15
 ```
 
-    /usr/lib/python2.7/site-packages/IPython/utils/traitlets.py:5: UserWarning: IPython.utils.traitlets has moved to a top-level traitlets package.
-      warn("IPython.utils.traitlets has moved to a top-level traitlets package.")
-    /usr/lib/python2.7/site-packages/IPython/kernel/__init__.py:13: ShimWarning: The `IPython.kernel` package has been deprecated. You should import from ipykernel or jupyter_client instead.
-      "You should import from ipykernel or jupyter_client instead.", ShimWarning)
-
-
     Populating the interactive namespace from numpy and matplotlib
 
 
@@ -87,7 +84,41 @@ df = pd.read_csv('./goodreads_export.csv')
 cleaned_df = df[df["My Rating"] != 0]
 ```
 
-***
+# Score distribution
+With a score scale of 1-5, you'd expect that the average score is 2.5 after a few hundred books (in other words, is it a normal distribution?)
+
+
+```python
+g = sns.distplot(cleaned_df["My Rating"])
+"Average: %.2f"%cleaned_df["My Rating"].mean(), "Median: %s"%cleaned_df["My Rating"].median()
+```
+
+
+
+
+    ('Average: 3.63', 'Median: 4.0')
+
+
+
+
+![png](README_files/README_5_1.png)
+
+
+That doesn't look normally distributed to me - let's ask Shapiro-Wilk (null hypothesis: data is drawn from normal distribution):
+
+
+```python
+W, p_value = scipy.stats.shapiro(cleaned_df["My Rating"])
+if p_value < 0.05:
+    print("Rejecting null hypothesis - data does not come from a normal distribution (p=%s)"%p_value)
+else:
+    print("Cannot reject null hypothesis (p=%s)"%p_value)
+```
+
+    Rejecting null hypothesis - data does not come from a normal distribution (p=3.56116634094e-20)
+
+
+In my case, the data is not normally distributed (in other words, the book scores are not evenly distributed around the middle). If you think about it, this makes sense: most readers don't read perfectly randomly, I avoid books I believe I'd dislike, and choose books that I prefer. I rate those books higher than average, therefore, my curve of scores is slanted towards the right.
 
 ## plot Pages vs Ratings
 
@@ -103,7 +134,7 @@ g = sns.jointplot("Number of Pages", "My Rating", data=cleaned_df, kind="reg", s
 
 
 
-![png](README_files/README_5_1.png)
+![png](README_files/README_10_1.png)
 
 
 I seem to mostly read books at around 200 to 300 pages so it's hard to tell whether I give longer books better ratings. It's also a nice example that in regards to linear regression, a p-value as tiny as this one doesn't mean much, the r-value is still bad.
@@ -157,7 +188,7 @@ pylab.show()
 ```
 
 
-![png](README_files/README_7_0.png)
+![png](README_files/README_12_0.png)
 
 
 There is some *bad* SF out there.
@@ -191,7 +222,7 @@ pylab.show()
 ```
 
 
-![png](README_files/README_9_0.png)
+![png](README_files/README_14_0.png)
 
 
 Of course, sometimes I just add several at once and guesstimate the correct "date read".
@@ -246,7 +277,7 @@ ax = sns.heatmap(dfp, annot=True)
 ```
 
 
-![png](README_files/README_11_0.png)
+![png](README_files/README_16_0.png)
 
 
 What happened in May 2014?
@@ -266,7 +297,7 @@ pylab.show()
 ```
 
 
-![png](README_files/README_13_0.png)
+![png](README_files/README_18_0.png)
 
 
 It's nice how reading behaviour (Goodreads usage) connects over the months - it slowly in 2013, stays constant in 2014/2015, and now goes down again.
@@ -342,7 +373,7 @@ pylab.show()
 
 
 
-![png](README_files/README_15_2.png)
+![png](README_files/README_20_2.png)
 
 
 ***
@@ -371,7 +402,7 @@ plt.show()
 ```
 
 
-![png](README_files/README_17_0.png)
+![png](README_files/README_22_0.png)
 
 
 Monday is procrastination day.
@@ -458,7 +489,7 @@ pylab.axis('off')
 pylab.show()
 ```
 
-    there are too brutal for most biologists
+    i will be introduced
 
 
     /usr/lib64/python2.7/site-packages/matplotlib/collections.py:650: FutureWarning: elementwise comparison failed; returning scalar instead, but in the future will perform elementwise comparison
@@ -466,7 +497,7 @@ pylab.show()
 
 
 
-![png](README_files/README_19_2.png)
+![png](README_files/README_24_2.png)
 
 
 I really wonder why it always forces the circular layout - it should connect from "translation" to "(i" which in turn connects to a few nodes.
