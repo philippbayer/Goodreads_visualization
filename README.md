@@ -75,6 +75,12 @@ rcParams['font.size'] = 15
     Populating the interactive namespace from numpy and matplotlib
 
 
+    /usr/lib/python2.7/site-packages/IPython/utils/traitlets.py:5: UserWarning: IPython.utils.traitlets has moved to a top-level traitlets package.
+      warn("IPython.utils.traitlets has moved to a top-level traitlets package.")
+    /usr/lib/python2.7/site-packages/IPython/kernel/__init__.py:13: ShimWarning: The `IPython.kernel` package has been deprecated. You should import from ipykernel or jupyter_client instead.
+      "You should import from ipykernel or jupyter_client instead.", ShimWarning)
+
+
 ## Loading the data
 
 
@@ -85,7 +91,7 @@ cleaned_df = df[df["My Rating"] != 0]
 ```
 
 # Score distribution
-With a score scale of 1-5, you'd expect that the average score is 2.5 after a few hundred books (in other words, is it a normal distribution?)
+With a score scale of 1-5, you'd expect that the average score is ~~2.5~~ 3 (since 0 is not counted) after a few hundred books (in other words, is it a normal distribution?)
 
 
 ```python
@@ -489,7 +495,7 @@ pylab.axis('off')
 pylab.show()
 ```
 
-    i will be introduced
+    a bit higher than him (remember "forget it, jake
 
 
     /usr/lib64/python2.7/site-packages/matplotlib/collections.py:650: FutureWarning: elementwise comparison failed; returning scalar instead, but in the future will perform elementwise comparison
