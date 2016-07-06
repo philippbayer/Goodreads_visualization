@@ -75,10 +75,8 @@ rcParams['font.size'] = 15
     Populating the interactive namespace from numpy and matplotlib
 
 
-    /usr/lib/python2.7/site-packages/IPython/utils/traitlets.py:5: UserWarning: IPython.utils.traitlets has moved to a top-level traitlets package.
-      warn("IPython.utils.traitlets has moved to a top-level traitlets package.")
-    /usr/lib/python2.7/site-packages/IPython/kernel/__init__.py:13: ShimWarning: The `IPython.kernel` package has been deprecated. You should import from ipykernel or jupyter_client instead.
-      "You should import from ipykernel or jupyter_client instead.", ShimWarning)
+    WARNING: pylab import has clobbered these variables: ['number']
+    `%matplotlib` prevents importing * from pylab and numpy
 
 
 ## Loading the data
@@ -95,7 +93,7 @@ With a score scale of 1-5, you'd expect that the average score is ~~2.5~~ 3 (sin
 
 
 ```python
-g = sns.distplot(cleaned_df["My Rating"])
+g = sns.distplot(cleaned_df["My Rating"], kde=False)
 "Average: %.2f"%cleaned_df["My Rating"].mean(), "Median: %s"%cleaned_df["My Rating"].median()
 ```
 
@@ -121,7 +119,7 @@ else:
     print("Cannot reject null hypothesis (p=%s)"%p_value)
 ```
 
-    Rejecting null hypothesis - data does not come from a normal distribution (p=3.56116634094e-20)
+    Rejecting null hypothesis - data does not come from a normal distribution (p=2.95437604725e-20)
 
 
 In my case, the data is not normally distributed (in other words, the book scores are not evenly distributed around the middle). If you think about it, this makes sense: most readers don't read perfectly randomly, I avoid books I believe I'd dislike, and choose books that I prefer. I rate those books higher than average, therefore, my curve of scores is slanted towards the right.
@@ -135,13 +133,23 @@ Do I give longer books better scores? A minor tendency but nothing special (it's
 g = sns.jointplot("Number of Pages", "My Rating", data=cleaned_df, kind="reg", size=7, ylim=[0.5,5.5])
 ```
 
-    /usr/lib64/python2.7/site-packages/matplotlib/collections.py:590: FutureWarning: elementwise comparison failed; returning scalar instead, but in the future will perform elementwise comparison
-      if self._edgecolors == str('face'):
+
+![png](README_files/README_10_0.png)
 
 
+You can plot the "residuals" (what's left after calculating the regression line in the above plot) to see how useful a regression is - regression is useful when your residuals are randomly distributed around the y=0 line, i.e., it's a good fit.
 
-![png](README_files/README_10_1.png)
 
+```python
+sns.residplot("Number of Pages", "My Rating", data=cleaned_df,
+              scatter_kws={"s": 80});
+```
+
+
+![png](README_files/README_12_0.png)
+
+
+That doesn't look random to me, with quite a slant towards the negative space! Regression isn't useful here.
 
 I seem to mostly read books at around 200 to 300 pages so it's hard to tell whether I give longer books better ratings. It's also a nice example that in regards to linear regression, a p-value as tiny as this one doesn't mean much, the r-value is still bad.
 
@@ -194,10 +202,39 @@ pylab.show()
 ```
 
 
-![png](README_files/README_12_0.png)
+![png](README_files/README_14_0.png)
 
 
 There is some *bad* SF out there.
+
+However, the sci-fi score looks normally distributed! Let's check:
+
+
+```python
+#print full_table
+W, p_value = scipy.stats.shapiro(full_table[full_table["Category"] == "sci-fi"]["Rating"])
+if p_value < 0.05:
+    print("Rejecting null hypothesis - data does not come from a normal distribution (p=%s)"%p_value)
+else:
+    print("Cannot reject null hypothesis (p=%s)"%p_value)
+sns.distplot(full_table[full_table["Category"] == "sci-fi"]["Rating"])
+```
+
+    Rejecting null hypothesis - data does not come from a normal distribution (p=0.000534319784492)
+
+
+
+
+
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f3b01859b10>
+
+
+
+
+![png](README_files/README_16_2.png)
+
+
+It does look like a close call, it's a bit skewed towards the rating of 4.
 
 ***
 
@@ -215,23 +252,41 @@ sorted_dates = sorted(dates)
 last_date = None
 differences = []
 all_days = []
+all_days_without_2012 = [] # not much goodreads usage in 2012 - remove that year
 for date in sorted_dates:
     if not last_date:
         last_date = date
+        if date.year != 2012:
+            last_date_not_2012 = date
     difference = date - last_date
+    
     days = difference.days
     all_days.append(days)
+    if date.year != 2012:
+        all_days_without_2012.append(days)
     last_date = date
 
-sns.distplot(all_days, axlabel="Distance in days between books read")
+sns.distplot(all_days, axlabel="Distance in days between books read", kde=True)
 pylab.show()
 ```
 
 
-![png](README_files/README_14_0.png)
+![png](README_files/README_18_0.png)
 
 
 Of course, sometimes I just add several at once and guesstimate the correct "date read".
+
+I didn't use Goodreads in 2012 much so let's see how it looks like without 2012:
+
+
+```python
+sns.distplot(all_days_without_2012, axlabel="Distance in days between books read")
+pylab.show()
+```
+
+
+![png](README_files/README_20_0.png)
+
 
 ***
 
@@ -283,7 +338,7 @@ ax = sns.heatmap(dfp, annot=True)
 ```
 
 
-![png](README_files/README_16_0.png)
+![png](README_files/README_22_0.png)
 
 
 What happened in May 2014?
@@ -303,7 +358,7 @@ pylab.show()
 ```
 
 
-![png](README_files/README_18_0.png)
+![png](README_files/README_24_0.png)
 
 
 It's nice how reading behaviour (Goodreads usage) connects over the months - it slowly in 2013, stays constant in 2014/2015, and now goes down again.
@@ -371,15 +426,11 @@ pylab.axis("off")
 pylab.show()
 ```
 
-    You have 43487 words in 313 reviews
-
-
-    /usr/lib64/python2.7/site-packages/PIL/ImageDraw.py:104: UserWarning: setfont() is deprecated. Please set the attribute directly instead.
-      "Please set the attribute directly instead.")
+    You have 44179 words in 316 reviews
 
 
 
-![png](README_files/README_20_2.png)
+![png](README_files/README_26_1.png)
 
 
 ***
@@ -408,7 +459,7 @@ plt.show()
 ```
 
 
-![png](README_files/README_22_0.png)
+![png](README_files/README_28_0.png)
 
 
 Monday is procrastination day.
@@ -495,15 +546,11 @@ pylab.axis('off')
 pylab.show()
 ```
 
-    a bit higher than him (remember "forget it, jake
-
-
-    /usr/lib64/python2.7/site-packages/matplotlib/collections.py:650: FutureWarning: elementwise comparison failed; returning scalar instead, but in the future will perform elementwise comparison
-      if self._edgecolors_original != str('face'):
+    ), and how he wanted to keep his power
 
 
 
-![png](README_files/README_24_2.png)
+![png](README_files/README_30_1.png)
 
 
 I really wonder why it always forces the circular layout - it should connect from "translation" to "(i" which in turn connects to a few nodes.
