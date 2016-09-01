@@ -24,6 +24,11 @@ to get the interactive version. In there, replace the path to my Goodreads expor
 * nltk
 * networkx
 * pymarkovchain
+* image (PIL inside python for some weird reason)
+
+To install all:
+
+    sudo pip install seaborn wordcloud nltk networkx pymarkovchain image 
 
 ## Licenses
 
@@ -75,8 +80,9 @@ rcParams['font.size'] = 15
     Populating the interactive namespace from numpy and matplotlib
 
 
-    WARNING: pylab import has clobbered these variables: ['number']
+    /usr/lib/python2.7/site-packages/IPython/core/magics/pylab.py:161: UserWarning: pylab import has clobbered these variables: ['number']
     `%matplotlib` prevents importing * from pylab and numpy
+      "\n`%matplotlib` prevents importing * from pylab and numpy"
 
 
 ## Loading the data
@@ -119,7 +125,7 @@ else:
     print("Cannot reject null hypothesis (p=%s)"%p_value)
 ```
 
-    Rejecting null hypothesis - data does not come from a normal distribution (p=2.95437604725e-20)
+    Rejecting null hypothesis - data does not come from a normal distribution (p=2.01479128298e-20)
 
 
 In my case, the data is not normally distributed (in other words, the book scores are not evenly distributed around the middle). If you think about it, this makes sense: most readers don't read perfectly randomly, I avoid books I believe I'd dislike, and choose books that I prefer. I rate those books higher than average, therefore, my curve of scores is slanted towards the right.
@@ -220,13 +226,13 @@ else:
 sns.distplot(full_table[full_table["Category"] == "sci-fi"]["Rating"])
 ```
 
-    Rejecting null hypothesis - data does not come from a normal distribution (p=0.000534319784492)
+    Rejecting null hypothesis - data does not come from a normal distribution (p=0.000450032006484)
 
 
 
 
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f3b01859b10>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f6038642210>
 
 
 
@@ -426,7 +432,7 @@ pylab.axis("off")
 pylab.show()
 ```
 
-    You have 44179 words in 316 reviews
+    You have 46417 words in 328 reviews
 
 
 
@@ -546,7 +552,7 @@ pylab.axis('off')
 pylab.show()
 ```
 
-    ), and how he wanted to keep his power
+    ) - the more genes are involved, the muddier it gets a student on vacation who did not meet is one of the mathematical parts, but it's a joy to read, compared to gibson fans, but not terrible, either, underwhelming
 
 
 
@@ -559,8 +565,12 @@ I really wonder why it always forces the circular layout - it should connect fro
 
 ## Some other ideas
 
-- A Python-library that interacts with the goodreads csv - a lot of code in this repo repeats itself slightly
 - Some people on goodreads have complained that their reviews disappear and I feel (but don't know) that I lost at least one, this tracks my exported CSV to check whether it actually happens. So far I haven't observed it.
-- Write automated parser that exports reviews to html/epub/tumblr/blogger/wordpress etc. (note: support for this was recently added to goodreads)
+- ~~Write automated parser that exports reviews to html/epub/tumblr/blogger/wordpress etc.~~ support for this was added to goodreads)
 - cron job which automatically pulls exported CSV from https://www.goodreads.com/review_porter/goodreads_export.csv (login a bit weird esp. with Facebook login, use API instead? Needs dev key, but easier to do /review/list.xml=USERID than to play Red Queen with Facebook's oauth)
 - various visualization things in regards to language use
+
+
+```python
+
+```
