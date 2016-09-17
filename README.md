@@ -1,4 +1,37 @@
 
+# Upload posts from Goodreads to Tumblr (UploadPosts.py)
+
+UploadPosts.py has a few hardcoded variables in it which you can set your own tumblr's stuff. The script parses the same data the analysis below uses - go [here](https://www.goodreads.com/review/import) and press "Export your library" to get your own csv.
+
+## Dependencies
+
+    pytumblr
+    pandas
+
+## What it does
+
+Currently thes script will upload the 30 last reviews it gets from the Goodreads API and puts them on the tumblr 'queue' - by defaut tumblr posts two posts per day from the queue.
+
+It will print something like:
+
+    INFO:root:Uploading post for Die Ausgewanderten
+    INFO:root:Uploading post for Slimer
+    INFO:root:Uploading post for Never Split the Difference: Negotiating As If Your Life Depended On It
+    INFO:root:Uploading post for Naked Statistics: Stripping the Dread from the Data
+    INFO:root:Uploading post for King Lear
+    INFO:root:Uploading post for Hamlet
+
+
+And then you have 30 posts in your queue.
+
+To set it up go to https://www.tumblr.com/settings/apps and create an app, or copy OAuth Consumer Key and OAuth Consumer Secret. Then go to https://api.tumblr.com/console/calls/user/info and enter those to receive TOKEN and TOKEN_SECRET, and enter those in the script.
+
+After that it's just a matter of running the script:
+
+    python UploadPosts.py
+
+(Haven't tested Python3 yet) There are still some minor bugs - for example, the Goodreads internal book or author links are not rendered correctly.
+
 # Goodreads visualization
 
 An ipython notebook to play around with Goodreads data and make some seaborn visualizations.
@@ -80,11 +113,6 @@ rcParams['font.size'] = 15
     Populating the interactive namespace from numpy and matplotlib
 
 
-    /usr/lib/python2.7/site-packages/IPython/core/magics/pylab.py:161: UserWarning: pylab import has clobbered these variables: ['number']
-    `%matplotlib` prevents importing * from pylab and numpy
-      "\n`%matplotlib` prevents importing * from pylab and numpy"
-
-
 ## Loading the data
 
 
@@ -125,7 +153,7 @@ else:
     print("Cannot reject null hypothesis (p=%s)"%p_value)
 ```
 
-    Rejecting null hypothesis - data does not come from a normal distribution (p=2.01479128298e-20)
+    Rejecting null hypothesis - data does not come from a normal distribution (p=2.21386942261e-20)
 
 
 In my case, the data is not normally distributed (in other words, the book scores are not evenly distributed around the middle). If you think about it, this makes sense: most readers don't read perfectly randomly, I avoid books I believe I'd dislike, and choose books that I prefer. I rate those books higher than average, therefore, my curve of scores is slanted towards the right.
@@ -232,7 +260,7 @@ sns.distplot(full_table[full_table["Category"] == "sci-fi"]["Rating"])
 
 
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f6038642210>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f313da29350>
 
 
 
@@ -432,7 +460,7 @@ pylab.axis("off")
 pylab.show()
 ```
 
-    You have 46417 words in 328 reviews
+    You have 46483 words in 329 reviews
 
 
 
@@ -552,7 +580,7 @@ pylab.axis('off')
 pylab.show()
 ```
 
-    ) - the more genes are involved, the muddier it gets a student on vacation who did not meet is one of the mathematical parts, but it's a joy to read, compared to gibson fans, but not terrible, either, underwhelming
+    absolute trainwreck of the ghost in the beginning, when all is the relevant quote is cut to the more virulent individuals just died faster, leaving the less prestigious end of functions, weird monkeypatching that always ends well) and came up with novel and outstanding results but was seen as a one-way, one-to-one interaction, at one point the yakuza are told by the people who get stuck in a vacuum
 
 
 
@@ -567,7 +595,7 @@ I really wonder why it always forces the circular layout - it should connect fro
 
 - Some people on goodreads have complained that their reviews disappear and I feel (but don't know) that I lost at least one, this tracks my exported CSV to check whether it actually happens. So far I haven't observed it.
 - ~~Write automated parser that exports reviews to html/epub/tumblr/blogger/wordpress etc.~~ support for this was added to goodreads)
-- cron job which automatically pulls exported CSV from https://www.goodreads.com/review_porter/goodreads_export.csv (login a bit weird esp. with Facebook login, use API instead? Needs dev key, but easier to do /review/list.xml=USERID than to play Red Queen with Facebook's oauth)
+- ~~cron job which automatically pulls exported CSV from https://www.goodreads.com/review_porter/goodreads_export.csv (login a bit weird esp. with Facebook login, use API instead? Needs dev key, but easier to do /review/list.xml=USERID than to play Red Queen with Facebook's oauth)~~
 - various visualization things in regards to language use
 
 
