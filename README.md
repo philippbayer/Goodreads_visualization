@@ -10,7 +10,7 @@ UploadPosts.py has a few hardcoded variables in it which you can set your own tu
 
 ## What it does
 
-Currently thes script will upload the 30 last reviews it gets from the Goodreads API and puts them on the tumblr 'queue' - by defaut tumblr posts two posts per day from the queue.
+Currently thes script will upload the 30 last reviews it gets from the Goodreads API and puts them on the tumblr 'queue' - by default tumblr posts two posts per day from the queue. It also cleans up a few things - Goodreads specific links in the review text, unicode author and book titles, etc.
 
 It will print something like:
 
@@ -30,7 +30,7 @@ After that it's just a matter of running the script:
 
     python UploadPosts.py
 
-(Haven't tested Python3 yet) There are still some minor bugs - for example, the Goodreads internal book or author links are not rendered correctly.
+It does not support Python 3 since the pytumblr library works only under Python 2.
 
 # Goodreads visualization
 
@@ -260,7 +260,7 @@ sns.distplot(full_table[full_table["Category"] == "sci-fi"]["Rating"])
 
 
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f313da29350>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f64f92dc790>
 
 
 
@@ -580,7 +580,7 @@ pylab.axis('off')
 pylab.show()
 ```
 
-    absolute trainwreck of the ghost in the beginning, when all is the relevant quote is cut to the more virulent individuals just died faster, leaving the less prestigious end of functions, weird monkeypatching that always ends well) and came up with novel and outstanding results but was seen as a one-way, one-to-one interaction, at one point the yakuza are told by the people who get stuck in a vacuum
+    this book gave me the first part should interest everyone, the detached way he learns the memory tricks that are completely rational; and the ending
 
 
 
