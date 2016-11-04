@@ -10,7 +10,7 @@ UploadPosts.py has a few hardcoded variables in it which you can set your own tu
 
 ## What it does
 
-Currently thes script will upload the 30 last reviews it gets from the Goodreads API and puts them on the tumblr 'queue' - by default tumblr posts two posts per day from the queue. It also cleans up a few things - Goodreads specific links in the review text, unicode author and book titles, etc.
+This script will upload the 30 last reviews it gets from the Goodreads API and puts them on the tumblr 'queue' - by default tumblr posts two posts per day from the queue. It also cleans up a few things - Goodreads specific links in the review text, unicode author and book titles, etc.
 
 It will print something like:
 
@@ -153,7 +153,7 @@ else:
     print("Cannot reject null hypothesis (p=%s)"%p_value)
 ```
 
-    Rejecting null hypothesis - data does not come from a normal distribution (p=2.21386942261e-20)
+    Rejecting null hypothesis - data does not come from a normal distribution (p=1.72610573387e-20)
 
 
 In my case, the data is not normally distributed (in other words, the book scores are not evenly distributed around the middle). If you think about it, this makes sense: most readers don't read perfectly randomly, I avoid books I believe I'd dislike, and choose books that I prefer. I rate those books higher than average, therefore, my curve of scores is slanted towards the right.
@@ -260,7 +260,7 @@ sns.distplot(full_table[full_table["Category"] == "sci-fi"]["Rating"])
 
 
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f64f92dc790>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f4913eca2d0>
 
 
 
@@ -460,7 +460,7 @@ pylab.axis("off")
 pylab.show()
 ```
 
-    You have 46483 words in 329 reviews
+    You have 47492 words in 332 reviews
 
 
 
@@ -580,7 +580,7 @@ pylab.axis('off')
 pylab.show()
 ```
 
-    this book gave me the first part should interest everyone, the detached way he learns the memory tricks that are completely rational; and the ending
+    it's all very "standard" fantasy/sf from there
 
 
 
