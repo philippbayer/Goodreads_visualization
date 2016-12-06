@@ -263,7 +263,7 @@ sns.distplot(full_table[full_table["Category"] == "sci-fi"]["Rating"])
 
 
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7fb6f0aed2d0>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f1192cf83d0>
 
 
 
@@ -288,11 +288,16 @@ names_dict = robjects.ListVector(names_dict)
 %load_ext rpy2.ipython
 %R library(UpSetR)
 # by default, only 5 sets are considered, so change nsets
-%R -i names_dict -w 900 -h 600  -u px upset(fromList(names_dict), order.by = "freq", nsets = 9)
+
+%R -i names_dict -r 150 -w 900 -h 700 upset(fromList(names_dict), order.by = "freq", nsets = 9)
 ```
 
+    The rpy2.ipython extension is already loaded. To reload it, use:
+      %reload_ext rpy2.ipython
 
-![png](README_files/README_18_0.png)
+
+
+![png](README_files/README_18_1.png)
 
 
 Most shelves are 'alone', but 'essays + non-fiction' and 'biography + non-fiction' show the biggest overlap.
@@ -605,7 +610,7 @@ pylab.axis('off')
 pylab.show()
 ```
 
-    it's about japan - other japanese often came looking for game of thrones
+    )
 
 
 
