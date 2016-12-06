@@ -76,6 +76,7 @@ OK, let's start!
 ```python
 % pylab inline
 
+
 # for most plots
 import pandas as pd
 import seaborn as sns
@@ -134,7 +135,7 @@ g = sns.distplot(cleaned_df["My Rating"], kde=False)
 
 
 
-    ('Average: 3.63', 'Median: 4.0')
+    ('Average: 3.62', 'Median: 4.0')
 
 
 
@@ -153,7 +154,7 @@ else:
     print("Cannot reject null hypothesis (p=%s)"%p_value)
 ```
 
-    Rejecting null hypothesis - data does not come from a normal distribution (p=1.72610573387e-20)
+    Rejecting null hypothesis - data does not come from a normal distribution (p=1.21015013043e-20)
 
 
 In my case, the data is not normally distributed (in other words, the book scores are not evenly distributed around the middle). If you think about it, this makes sense: most readers don't read perfectly randomly, I avoid books I believe I'd dislike, and choose books that I prefer. I rate those books higher than average, therefore, my curve of scores is slanted towards the right.
@@ -203,6 +204,7 @@ CATEGORIES = 7 # number of most crowded categories to plot
 
 shelves_ratings = defaultdict(list) # key: shelf-name, value: list of ratings
 shelves_counter = Counter() # counts how many books on each shelf
+shelves_to_names = defaultdict(list) # key: shelf-name, value: list of book names
 
 for index, row in cleaned_df.iterrows():
     my_rating = row["My Rating"]
@@ -219,6 +221,7 @@ for index, row in cleaned_df.iterrows():
         s = s.strip() # I had "non-fiction" and " non-fiction"
         shelves_ratings[s].append(my_rating)
         shelves_counter[s] += 10
+        shelves_to_names[s].append(row.Title)
 
 names = []
 ratings = []
@@ -254,13 +257,13 @@ else:
 sns.distplot(full_table[full_table["Category"] == "sci-fi"]["Rating"])
 ```
 
-    Rejecting null hypothesis - data does not come from a normal distribution (p=0.000450032006484)
+    Rejecting null hypothesis - data does not come from a normal distribution (p=0.000240181907429)
 
 
 
 
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f4913eca2d0>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7fb6f0aed2d0>
 
 
 
@@ -270,7 +273,29 @@ sns.distplot(full_table[full_table["Category"] == "sci-fi"]["Rating"])
 
 It does look like a close call, it's a bit skewed towards the rating of 4.
 
-***
+At this point I wonder - since we can assign multiple 'shelves' (tags) to each book, do I have some tags that appear more often together than not? Let's use R!
+
+
+```python
+from rpy2 import robjects
+
+all_shelves = shelves_counter.keys()
+names_dict = {} # key: shelf name, value: robjects.StrVector of names
+for c in all_shelves:
+    names_dict[c] = robjects.StrVector(shelves_to_names[c])
+
+names_dict = robjects.ListVector(names_dict)    
+%load_ext rpy2.ipython
+%R library(UpSetR)
+# by default, only 5 sets are considered, so change nsets
+%R -i names_dict -w 900 -h 600  -u px upset(fromList(names_dict), order.by = "freq", nsets = 9)
+```
+
+
+![png](README_files/README_18_0.png)
+
+
+Most shelves are 'alone', but 'essays + non-fiction' and 'biography + non-fiction' show the biggest overlap.
 
 ## plotHistogramDistanceRead.py
 
@@ -305,7 +330,7 @@ pylab.show()
 ```
 
 
-![png](README_files/README_18_0.png)
+![png](README_files/README_20_0.png)
 
 
 Of course, sometimes I just add several at once and guesstimate the correct "date read".
@@ -319,7 +344,7 @@ pylab.show()
 ```
 
 
-![png](README_files/README_20_0.png)
+![png](README_files/README_22_0.png)
 
 
 ***
@@ -372,7 +397,7 @@ ax = sns.heatmap(dfp, annot=True)
 ```
 
 
-![png](README_files/README_22_0.png)
+![png](README_files/README_24_0.png)
 
 
 What happened in May 2014?
@@ -392,7 +417,7 @@ pylab.show()
 ```
 
 
-![png](README_files/README_24_0.png)
+![png](README_files/README_26_0.png)
 
 
 It's nice how reading behaviour (Goodreads usage) connects over the months - it slowly in 2013, stays constant in 2014/2015, and now goes down again.
@@ -460,11 +485,11 @@ pylab.axis("off")
 pylab.show()
 ```
 
-    You have 47492 words in 332 reviews
+    You have 48569 words in 338 reviews
 
 
 
-![png](README_files/README_26_1.png)
+![png](README_files/README_28_1.png)
 
 
 ***
@@ -493,7 +518,7 @@ plt.show()
 ```
 
 
-![png](README_files/README_28_0.png)
+![png](README_files/README_30_0.png)
 
 
 Monday is procrastination day.
@@ -580,11 +605,11 @@ pylab.axis('off')
 pylab.show()
 ```
 
-    it's all very "standard" fantasy/sf from there
+    it's about japan - other japanese often came looking for game of thrones
 
 
 
-![png](README_files/README_30_1.png)
+![png](README_files/README_32_1.png)
 
 
 I really wonder why it always forces the circular layout - it should connect from "translation" to "(i" which in turn connects to a few nodes.
