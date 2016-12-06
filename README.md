@@ -57,6 +57,8 @@ to get the interactive version. In there, replace the path to my Goodreads expor
 * nltk
 * networkx
 * pymarkovchain
+* scikit-learn
+* distance
 * image (PIL inside python for some weird reason)
 
 To install all:
@@ -78,6 +80,7 @@ OK, let's start!
 
 
 # for most plots
+import numpy as np
 import pandas as pd
 import seaborn as sns
 from collections import defaultdict, Counter, OrderedDict
@@ -99,6 +102,11 @@ from wordcloud import WordCloud
 from pymarkovchain import MarkovChain
 import pickle
 import networkx as nx
+
+# for shelf clustering
+import distance
+from sklearn.preprocessing import StandardScaler
+from sklearn.cluster import DBSCAN
 
 sns.set_palette("coolwarm")
 
@@ -263,7 +271,7 @@ sns.distplot(full_table[full_table["Category"] == "sci-fi"]["Rating"])
 
 
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f1192cf83d0>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7ffb27de5210>
 
 
 
@@ -292,15 +300,48 @@ names_dict = robjects.ListVector(names_dict)
 %R -i names_dict -r 150 -w 900 -h 700 upset(fromList(names_dict), order.by = "freq", nsets = 9)
 ```
 
-    The rpy2.ipython extension is already loaded. To reload it, use:
-      %reload_ext rpy2.ipython
 
-
-
-![png](README_files/README_18_1.png)
+![png](README_files/README_18_0.png)
 
 
 Most shelves are 'alone', but 'essays + non-fiction' and 'biography + non-fiction' show the biggest overlap.
+
+I may have messed up the categories, let's cluster them! Typos should cluster together
+
+
+```python
+# get the Levenshtein distance between all shelf titles
+X = np.array([[float(distance.levenshtein(shelf_1,shelf_2)) for shelf_1 in all_shelves] for shelf_2 in all_shelves])
+# scale for clustering
+X = StandardScaler().fit_transform(X)
+
+# after careful fiddling I'm settling on eps=3
+clusters = DBSCAN(eps=3, min_samples=1).fit_predict(X)
+print('There are %s clusters in DBSCAN.'%len(set(clusters)))
+
+cluster_dict = defaultdict(list)
+assert len(clusters) == len(all_shelves)
+for cluster_label, element in zip(clusters, all_shelves):
+    cluster_dict[cluster_label].append(element)
+    
+print('Clusters with more than one member:')
+for k in sorted(cluster_dict):
+    if len(cluster_dict[k]) > 1:
+        print k, cluster_dict[k]
+```
+
+    There are 133 clusters in DBSCAN.
+    Clusters with more than one member:
+    0 ['essay', 'essays']
+    15 ['arab', 'art', 'iraq', 'war']
+    31 ['greece', 'greek']
+    41 ['ww1', 'ww2']
+    43 ['french', 'france']
+    80 ['russian', 'russia']
+    92 ['spy', 'sf']
+
+
+Some clusters are bad due to too-short shelf names (arab and art, or spy and sf), some other clusters are good and show me that I made some mistakes in labeling! French and France should be together, Greece and Greek too. *neat*
 
 ## plotHistogramDistanceRead.py
 
@@ -335,7 +376,7 @@ pylab.show()
 ```
 
 
-![png](README_files/README_20_0.png)
+![png](README_files/README_23_0.png)
 
 
 Of course, sometimes I just add several at once and guesstimate the correct "date read".
@@ -349,7 +390,7 @@ pylab.show()
 ```
 
 
-![png](README_files/README_22_0.png)
+![png](README_files/README_25_0.png)
 
 
 ***
@@ -402,7 +443,7 @@ ax = sns.heatmap(dfp, annot=True)
 ```
 
 
-![png](README_files/README_24_0.png)
+![png](README_files/README_27_0.png)
 
 
 What happened in May 2014?
@@ -422,10 +463,12 @@ pylab.show()
 ```
 
 
-![png](README_files/README_26_0.png)
+![png](README_files/README_29_0.png)
 
 
-It's nice how reading behaviour (Goodreads usage) connects over the months - it slowly in 2013, stays constant in 2014/2015, and now goes down again.
+It's nice how reading behaviour (Goodreads usage) connects over the months - it slowly in 2013, stays constant in 2014/2015, and now goes down again. You can see when my son was born!
+
+(Solution: 2016-8-25)
 
 ***
 
@@ -494,7 +537,7 @@ pylab.show()
 
 
 
-![png](README_files/README_28_1.png)
+![png](README_files/README_31_1.png)
 
 
 ***
@@ -523,7 +566,7 @@ plt.show()
 ```
 
 
-![png](README_files/README_30_0.png)
+![png](README_files/README_33_0.png)
 
 
 Monday is procrastination day.
@@ -610,11 +653,11 @@ pylab.axis('off')
 pylab.show()
 ```
 
-    )
+    5) on gender there's quite a few apologetic paragraphs on this in 1951; feels more like a hot saturday afternoon
 
 
 
-![png](README_files/README_32_1.png)
+![png](README_files/README_35_1.png)
 
 
 I really wonder why it always forces the circular layout - it should connect from "translation" to "(i" which in turn connects to a few nodes.
@@ -627,8 +670,3 @@ I really wonder why it always forces the circular layout - it should connect fro
 - ~~Write automated parser that exports reviews to html/epub/tumblr/blogger/wordpress etc.~~ support for this was added to goodreads)
 - ~~cron job which automatically pulls exported CSV from https://www.goodreads.com/review_porter/goodreads_export.csv (login a bit weird esp. with Facebook login, use API instead? Needs dev key, but easier to do /review/list.xml=USERID than to play Red Queen with Facebook's oauth)~~
 - various visualization things in regards to language use
-
-
-```python
-
-```
