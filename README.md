@@ -271,7 +271,7 @@ sns.distplot(full_table[full_table["Category"] == "sci-fi"]["Rating"])
 
 
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7ffb27de5210>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f538fe19310>
 
 
 
@@ -310,14 +310,15 @@ I may have messed up the categories, let's cluster them! Typos should cluster to
 
 
 ```python
-# get the Levenshtein distance between all shelf titles
-X = np.array([[float(distance.levenshtein(shelf_1,shelf_2)) for shelf_1 in all_shelves] for shelf_2 in all_shelves])
+# get the Levenshtein distance between all shelf titles, normalise the distance by string length
+X = np.array([[float(distance.levenshtein(shelf_1,shelf_2))/max(len(shelf_1), len(shelf_2)) \
+               for shelf_1 in all_shelves] for shelf_2 in all_shelves])
 # scale for clustering
 X = StandardScaler().fit_transform(X)
 
-# after careful fiddling I'm settling on eps=3
-clusters = DBSCAN(eps=3, min_samples=1).fit_predict(X)
-print('There are %s clusters in DBSCAN.'%len(set(clusters)))
+# after careful fiddling I'm settling on eps=10
+clusters = DBSCAN(eps=10, min_samples=1).fit_predict(X)
+print('DBSCAN made %s clusters for %s shelves/tags.'%(len(set(clusters)), len(all_shelves)))
 
 cluster_dict = defaultdict(list)
 assert len(clusters) == len(all_shelves)
@@ -330,18 +331,30 @@ for k in sorted(cluster_dict):
         print k, cluster_dict[k]
 ```
 
-    There are 133 clusters in DBSCAN.
+    DBSCAN made 121 clusters for 142 shelves/tags.
     Clusters with more than one member:
     0 ['essay', 'essays']
-    15 ['arab', 'art', 'iraq', 'war']
-    31 ['greece', 'greek']
-    41 ['ww1', 'ww2']
-    43 ['french', 'france']
-    80 ['russian', 'russia']
-    92 ['spy', 'sf']
+    14 ['horror', 'body-horror']
+    15 ['arab', 'art', 'iraq']
+    18 ['on-writing', 'on-thinking', 'on-living']
+    23 ['austria', 'australia']
+    26 ['non-fiction', 'fiction']
+    28 ['history-of-biology', 'history-of-cs', 'history-of-philosophy']
+    30 ['greece', 'greek']
+    36 ['biology', 'mythology', 'theology']
+    38 ['ww1', 'ww2']
+    39 ['humble-bundle2', 'humble-bundle']
+    40 ['french', 'france']
+    64 ['internets', 'interview']
+    74 ['russian', 'russia']
+    88 ['pop-philosophy', 'philosophy']
+    94 ['biography', 'autobiography']
+    105 ['on-war', 'cold-war']
 
 
-Some clusters are bad due to too-short shelf names (arab and art, or spy and sf), some other clusters are good and show me that I made some mistakes in labeling! French and France should be together, Greece and Greek too. *neat*
+Ha, the classic Austria/Australia thing. Some clusters are problematic due to too-short label names (arab/art), some other clusters are good and show me that I made some mistakes in labeling! French and France should be together, Greece and Greek too. *Neat!*
+
+(Without normalising the distance by string length clusters like horror/body-horror don't appear.)
 
 ## plotHistogramDistanceRead.py
 
@@ -653,7 +666,7 @@ pylab.axis('off')
 pylab.show()
 ```
 
-    5) on gender there's quite a few apologetic paragraphs on this in 1951; feels more like a hot saturday afternoon
+    via speakers, but he dislikes the soldiers around the 1980s/1990s
 
 
 
