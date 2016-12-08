@@ -1,40 +1,7 @@
 
-# Upload posts from Goodreads to Tumblr (UploadPosts.py)
-
-UploadPosts.py has a few hardcoded variables in it which you can set your own tumblr's stuff. The script parses the same data the analysis below uses - go [here](https://www.goodreads.com/review/import) and press "Export your library" to get your own csv.
-
-## Dependencies
-
-    pytumblr
-    pandas
-
-## What it does
-
-This script will upload the 30 last reviews it gets from the Goodreads API and puts them on the tumblr 'queue' - by default tumblr posts two posts per day from the queue. It also cleans up a few things - Goodreads specific links in the review text, unicode author and book titles, etc.
-
-It will print something like:
-
-    INFO:root:Uploading post for Die Ausgewanderten
-    INFO:root:Uploading post for Slimer
-    INFO:root:Uploading post for Never Split the Difference: Negotiating As If Your Life Depended On It
-    INFO:root:Uploading post for Naked Statistics: Stripping the Dread from the Data
-    INFO:root:Uploading post for King Lear
-    INFO:root:Uploading post for Hamlet
-
-
-And then you have 30 posts in your queue.
-
-To set it up go to https://www.tumblr.com/settings/apps and create an app, or copy OAuth Consumer Key and OAuth Consumer Secret. Then go to https://api.tumblr.com/console/calls/user/info and enter those to receive TOKEN and TOKEN_SECRET, and enter those in the script.
-
-After that it's just a matter of running the script:
-
-    python UploadPosts.py
-
-It does not support Python 3 since the pytumblr library works only under Python 2.
-
 # Goodreads visualization
 
-An ipython notebook to play around with Goodreads data and make some seaborn visualizations.
+An ipython notebook to play around with Goodreads data and make some seaborn visualizations, learn more about scikit-learn, my own playground!
 
 You can use it with your own data - go [here](https://www.goodreads.com/review/import) and press "Export your library" to get your own csv.
 
@@ -119,9 +86,6 @@ rcParams['ytick.labelsize'] = 15
 rcParams['font.size'] = 15
 ```
 
-    Populating the interactive namespace from numpy and matplotlib
-
-
 ## Loading the data
 
 
@@ -140,17 +104,6 @@ g = sns.distplot(cleaned_df["My Rating"], kde=False)
 "Average: %.2f"%cleaned_df["My Rating"].mean(), "Median: %s"%cleaned_df["My Rating"].median()
 ```
 
-
-
-
-    ('Average: 3.62', 'Median: 4.0')
-
-
-
-
-![png](README_files/README_5_1.png)
-
-
 That doesn't look normally distributed to me - let's ask Shapiro-Wilk (null hypothesis: data is drawn from normal distribution):
 
 
@@ -161,9 +114,6 @@ if p_value < 0.05:
 else:
     print("Cannot reject null hypothesis (p=%s)"%p_value)
 ```
-
-    Rejecting null hypothesis - data does not come from a normal distribution (p=1.21015013043e-20)
-
 
 In my case, the data is not normally distributed (in other words, the book scores are not evenly distributed around the middle). If you think about it, this makes sense: most readers don't read perfectly randomly, I avoid books I believe I'd dislike, and choose books that I prefer. I rate those books higher than average, therefore, my curve of scores is slanted towards the right.
 
@@ -176,10 +126,6 @@ Do I give longer books better scores? A minor tendency but nothing special (it's
 g = sns.jointplot("Number of Pages", "My Rating", data=cleaned_df, kind="reg", size=7, ylim=[0.5,5.5])
 ```
 
-
-![png](README_files/README_10_0.png)
-
-
 You can plot the "residuals" (what's left after calculating the regression line in the above plot) to see how useful a regression is - regression is useful when your residuals are randomly distributed around the y=0 line, i.e., it's a good fit.
 
 
@@ -187,10 +133,6 @@ You can plot the "residuals" (what's left after calculating the regression line 
 sns.residplot("Number of Pages", "My Rating", data=cleaned_df,
               scatter_kws={"s": 80});
 ```
-
-
-![png](README_files/README_12_0.png)
-
 
 That doesn't look random to me, with quite a slant towards the negative space! Regression isn't useful here.
 
@@ -246,10 +188,6 @@ sns.violinplot(x = "Category", y = "Rating", data=full_table)
 pylab.show()
 ```
 
-
-![png](README_files/README_14_0.png)
-
-
 There is some *bad* SF out there.
 
 However, the sci-fi score looks normally distributed! Let's check:
@@ -264,20 +202,6 @@ else:
     print("Cannot reject null hypothesis (p=%s)"%p_value)
 sns.distplot(full_table[full_table["Category"] == "sci-fi"]["Rating"])
 ```
-
-    Rejecting null hypothesis - data does not come from a normal distribution (p=0.000240181907429)
-
-
-
-
-
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f538fe19310>
-
-
-
-
-![png](README_files/README_16_2.png)
-
 
 It does look like a close call, it's a bit skewed towards the rating of 4.
 
@@ -299,10 +223,6 @@ names_dict = robjects.ListVector(names_dict)
 
 %R -i names_dict -r 150 -w 900 -h 700 upset(fromList(names_dict), order.by = "freq", nsets = 9)
 ```
-
-
-![png](README_files/README_18_0.png)
-
 
 Most shelves are 'alone', but 'essays + non-fiction' and 'biography + non-fiction' show the biggest overlap.
 
@@ -330,27 +250,6 @@ for k in sorted(cluster_dict):
     if len(cluster_dict[k]) > 1:
         print k, cluster_dict[k]
 ```
-
-    DBSCAN made 121 clusters for 142 shelves/tags.
-    Clusters with more than one member:
-    0 ['essay', 'essays']
-    14 ['horror', 'body-horror']
-    15 ['arab', 'art', 'iraq']
-    18 ['on-writing', 'on-thinking', 'on-living']
-    23 ['austria', 'australia']
-    26 ['non-fiction', 'fiction']
-    28 ['history-of-biology', 'history-of-cs', 'history-of-philosophy']
-    30 ['greece', 'greek']
-    36 ['biology', 'mythology', 'theology']
-    38 ['ww1', 'ww2']
-    39 ['humble-bundle2', 'humble-bundle']
-    40 ['french', 'france']
-    64 ['internets', 'interview']
-    74 ['russian', 'russia']
-    88 ['pop-philosophy', 'philosophy']
-    94 ['biography', 'autobiography']
-    105 ['on-war', 'cold-war']
-
 
 Ha, the classic Austria/Australia thing. Some clusters are problematic due to too-short label names (arab/art), some other clusters are good and show me that I made some mistakes in labeling! French and France should be together, Greece and Greek too. *Neat!*
 
@@ -388,10 +287,6 @@ sns.distplot(all_days, axlabel="Distance in days between books read", kde=True)
 pylab.show()
 ```
 
-
-![png](README_files/README_23_0.png)
-
-
 Of course, sometimes I just add several at once and guesstimate the correct "date read".
 
 I didn't use Goodreads in 2012 much so let's see how it looks like without 2012:
@@ -401,10 +296,6 @@ I didn't use Goodreads in 2012 much so let's see how it looks like without 2012:
 sns.distplot(all_days_without_2012, axlabel="Distance in days between books read")
 pylab.show()
 ```
-
-
-![png](README_files/README_25_0.png)
-
 
 ***
 
@@ -455,10 +346,6 @@ dfp = df.pivot("month", "year", "books_read")
 ax = sns.heatmap(dfp, annot=True)
 ```
 
-
-![png](README_files/README_27_0.png)
-
-
 What happened in May 2014?
 
 ***
@@ -474,10 +361,6 @@ g.set_xlabels("Month")
 pylab.xlim(1, 12)
 pylab.show()
 ```
-
-
-![png](README_files/README_29_0.png)
-
 
 It's nice how reading behaviour (Goodreads usage) connects over the months - it slowly in 2013, stays constant in 2014/2015, and now goes down again. You can see when my son was born!
 
@@ -546,13 +429,6 @@ pylab.axis("off")
 pylab.show()
 ```
 
-    You have 48569 words in 338 reviews
-
-
-
-![png](README_files/README_31_1.png)
-
-
 ***
 
 ## plot books read vs. week-day
@@ -577,10 +453,6 @@ plt.tight_layout()
 plt.show()
 
 ```
-
-
-![png](README_files/README_33_0.png)
-
 
 Monday is procrastination day.
 
@@ -665,13 +537,6 @@ nx.draw_networkx_labels(G, pos, font_size=10, font_family='sans-serif')
 pylab.axis('off')
 pylab.show()
 ```
-
-    via speakers, but he dislikes the soldiers around the 1980s/1990s
-
-
-
-![png](README_files/README_35_1.png)
-
 
 I really wonder why it always forces the circular layout - it should connect from "translation" to "(i" which in turn connects to a few nodes.
 
