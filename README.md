@@ -129,7 +129,7 @@ else:
     print("Cannot reject null hypothesis (p=%s)"%p_value)
 ```
 
-    Rejecting null hypothesis - data does not come from a normal distribution (p=5.9864244348e-21)
+    Rejecting null hypothesis - data does not come from a normal distribution (p=3.70679342648e-21)
 
 
 In my case, the data is not normally distributed (in other words, the book scores are not evenly distributed around the middle). If you think about it, this makes sense: most readers don't read perfectly randomly, I avoid books I believe I'd dislike, and choose books that I prefer. I rate those books higher than average, therefore, my curve of scores is slanted towards the right.
@@ -232,13 +232,13 @@ else:
 sns.distplot(full_table[full_table["Category"] == "sci-fi"]["Rating"])
 ```
 
-    Rejecting null hypothesis - data does not come from a normal distribution (p=0.000240181907429)
+    Rejecting null hypothesis - data does not come from a normal distribution (p=1.61718107847e-05)
 
 
 
 
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7fde33779150>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f0becb32e50>
 
 
 
@@ -298,25 +298,22 @@ for k in sorted(cluster_dict):
         print k, cluster_dict[k]
 ```
 
-    DBSCAN made 123 clusters for 144 shelves/tags.
+    DBSCAN made 130 clusters for 148 shelves/tags.
     Clusters with more than one member:
     0 ['essay', 'essays']
     13 ['australia', 'austria']
     15 ['horror', 'body-horror']
     16 ['arab', 'art', 'iraq']
     19 ['on-writing', 'on-thinking', 'on-living']
-    26 ['non-fiction', 'fiction']
-    28 ['history-of-biology', 'history-of-cs', 'history-of-philosophy']
-    30 ['greece', 'greek']
-    36 ['biology', 'mythology', 'theology']
-    38 ['ww1', 'ww2']
-    39 ['humble-bundle2', 'humble-bundle']
-    40 ['french', 'france']
-    65 ['internets', 'interview']
-    75 ['russian', 'russia']
-    89 ['pop-philosophy', 'philosophy']
-    96 ['biography', 'autobiography']
-    107 ['on-war', 'cold-war']
+    29 ['history-of-biology', 'history-of-cs', 'history-of-philosophy']
+    31 ['greece', 'greek']
+    37 ['biology', 'mythology', 'theology']
+    39 ['ww1', 'ww2']
+    40 ['humble-bundle2', 'humble-bundle']
+    67 ['internets', 'interview']
+    80 ['russian', 'russia']
+    95 ['pop-philosophy', 'philosophy']
+    102 ['biography', 'autobiography']
 
 
 Ha, the classic Austria/Australia thing. Some clusters are problematic due to too-short label names (arab/art), some other clusters are good and show me that I made some mistakes in labeling! French and France should be together, Greece and Greek too. *Neat!*
@@ -513,7 +510,7 @@ pylab.axis("off")
 pylab.show()
 ```
 
-    You have 49830 words in 347 reviews
+    You have 51430 words in 355 reviews
 
 
 
@@ -633,7 +630,7 @@ pylab.axis('off')
 pylab.show()
 ```
 
-    unfortunately, very few people i know very little to nothing, most is published posthumously
+    ) - these essays right now are some hackers in the past who live in perpetual fear
 
 
 
@@ -651,8 +648,3 @@ I really wonder why it always forces the circular layout - it should connect fro
 - ~~cron job which automatically pulls exported CSV from https://www.goodreads.com/review_porter/goodreads_export.csv (login a bit weird esp. with Facebook login, use API instead? Needs dev key, but easier to do /review/list.xml=USERID than to play Red Queen with Facebook's oauth)~~
 - various visualization things in regards to language use
 - RNN to write automated reviews, similar to the Markov one
-
-
-```python
-
-```
