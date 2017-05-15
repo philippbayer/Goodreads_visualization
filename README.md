@@ -129,7 +129,7 @@ else:
     print("Cannot reject null hypothesis (p=%s)"%p_value)
 ```
 
-    Rejecting null hypothesis - data does not come from a normal distribution (p=3.70679342648e-21)
+    Rejecting null hypothesis - data does not come from a normal distribution (p=1.91545626181e-21)
 
 
 In my case, the data is not normally distributed (in other words, the book scores are not evenly distributed around the middle). If you think about it, this makes sense: most readers don't read perfectly randomly, I avoid books I believe I'd dislike, and choose books that I prefer. I rate those books higher than average, therefore, my curve of scores is slanted towards the right.
@@ -232,13 +232,13 @@ else:
 sns.distplot(full_table[full_table["Category"] == "sci-fi"]["Rating"])
 ```
 
-    Rejecting null hypothesis - data does not come from a normal distribution (p=1.61718107847e-05)
+    Rejecting null hypothesis - data does not come from a normal distribution (p=1.16171349873e-05)
 
 
 
 
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f0becb32e50>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f9c0c7ffc90>
 
 
 
@@ -298,7 +298,7 @@ for k in sorted(cluster_dict):
         print k, cluster_dict[k]
 ```
 
-    DBSCAN made 130 clusters for 148 shelves/tags.
+    DBSCAN made 132 clusters for 150 shelves/tags.
     Clusters with more than one member:
     0 ['essay', 'essays']
     13 ['australia', 'austria']
@@ -306,14 +306,14 @@ for k in sorted(cluster_dict):
     16 ['arab', 'art', 'iraq']
     19 ['on-writing', 'on-thinking', 'on-living']
     29 ['history-of-biology', 'history-of-cs', 'history-of-philosophy']
-    31 ['greece', 'greek']
-    37 ['biology', 'mythology', 'theology']
-    39 ['ww1', 'ww2']
-    40 ['humble-bundle2', 'humble-bundle']
-    67 ['internets', 'interview']
-    80 ['russian', 'russia']
-    95 ['pop-philosophy', 'philosophy']
-    102 ['biography', 'autobiography']
+    32 ['greece', 'greek']
+    39 ['biology', 'mythology', 'theology']
+    41 ['ww1', 'ww2']
+    42 ['humble-bundle2', 'humble-bundle']
+    69 ['internets', 'interview']
+    82 ['russian', 'russia']
+    97 ['pop-philosophy', 'philosophy']
+    104 ['biography', 'autobiography']
 
 
 Ha, the classic Austria/Australia thing. Some clusters are problematic due to too-short label names (arab/art), some other clusters are good and show me that I made some mistakes in labeling! French and France should be together, Greece and Greek too. *Neat!*
@@ -510,7 +510,7 @@ pylab.axis("off")
 pylab.show()
 ```
 
-    You have 51430 words in 355 reviews
+    You have 53189 words in 366 reviews
 
 
 
@@ -564,6 +564,7 @@ Some examples:
 * - no supervisor, no grant attached to a beautiful suicide and now i cleared my mind of circe's orders -cramping my style, urging me not to write the paper
 * not being focused on useless mobile apps, but on medical companies that treat death as a sign of dissent
 * the harassment of irs-personnel to get into the dark cave
+* they're doing "good"
 
 *why does this work so well*
 
@@ -630,7 +631,7 @@ pylab.axis('off')
 pylab.show()
 ```
 
-    ) - these essays right now are some hackers in the past who live in perpetual fear
+    there's a special kind of person, but a posthumous collection of more subtle (or even bigger) biases
 
 
 
