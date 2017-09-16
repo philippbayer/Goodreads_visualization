@@ -7,7 +7,7 @@ You can use it with your own data - go [here](https://www.goodreads.com/review/i
 
 The text you're reading is generated from a jupyter notebook by the Makefile. If you want to run it yourself, clone the repository then run
 
-    ipython3 notebook your_file.ipynb
+    jupyter notebook your_file.ipynb
     
 to get the interactive version. In there, replace the path to my Goodreads exported file by yours in the ipynb file, and then run click on Cell -> Run All.
 
@@ -30,7 +30,7 @@ to get the interactive version. In there, replace the path to my Goodreads expor
 
 To install all:
 
-    sudo pip install seaborn wordcloud nltk networkx pymarkovchain image 
+    pip install seaborn wordcloud nltk networkx pymarkovchain image 
 
 ## Licenses
 
@@ -129,7 +129,7 @@ else:
     print("Cannot reject null hypothesis (p=%s)"%p_value)
 ```
 
-    Rejecting null hypothesis - data does not come from a normal distribution (p=1.91545626181e-21)
+    Rejecting null hypothesis - data does not come from a normal distribution (p=8.95447246896e-22)
 
 
 In my case, the data is not normally distributed (in other words, the book scores are not evenly distributed around the middle). If you think about it, this makes sense: most readers don't read perfectly randomly, I avoid books I believe I'd dislike, and choose books that I prefer. I rate those books higher than average, therefore, my curve of scores is slanted towards the right.
@@ -232,13 +232,13 @@ else:
 sns.distplot(full_table[full_table["Category"] == "sci-fi"]["Rating"])
 ```
 
-    Rejecting null hypothesis - data does not come from a normal distribution (p=1.16171349873e-05)
+    Rejecting null hypothesis - data does not come from a normal distribution (p=1.88832673302e-05)
 
 
 
 
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f9c0c7ffc90>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f95ecd0d650>
 
 
 
@@ -271,7 +271,7 @@ names_dict = robjects.ListVector(names_dict)
 ![png](README_files/README_18_0.png)
 
 
-Most shelves are 'alone', but 'essays + non-fiction' and 'biography + non-fiction' show the biggest overlap.
+Most shelves are 'alone', but 'essays + non-fiction', 'sci-fi + sf' (should clean that up...), 'biography + non-fiction' show the biggest overlap.
 
 I may have messed up the categories, let's cluster them! Typos should cluster together
 
@@ -298,25 +298,25 @@ for k in sorted(cluster_dict):
         print k, cluster_dict[k]
 ```
 
-    DBSCAN made 132 clusters for 150 shelves/tags.
+    DBSCAN made 136 clusters for 155 shelves/tags.
     Clusters with more than one member:
     0 ['essay', 'essays']
     13 ['australia', 'austria']
-    15 ['horror', 'body-horror']
-    16 ['arab', 'art', 'iraq']
-    19 ['on-writing', 'on-thinking', 'on-living']
-    29 ['history-of-biology', 'history-of-cs', 'history-of-philosophy']
-    32 ['greece', 'greek']
-    39 ['biology', 'mythology', 'theology']
-    41 ['ww1', 'ww2']
-    42 ['humble-bundle2', 'humble-bundle']
-    69 ['internets', 'interview']
-    82 ['russian', 'russia']
-    97 ['pop-philosophy', 'philosophy']
-    104 ['biography', 'autobiography']
+    15 ['horror', 'weird-horror', 'body-horror']
+    16 ['arab', 'iraq']
+    20 ['on-writing', 'on-thinking', 'on-living']
+    33 ['history-of-biology', 'history-of-cs', 'history-of-philosophy']
+    36 ['greece', 'greek']
+    39 ['sociology', 'biology', 'mythology', 'theology']
+    46 ['ww1', 'ww2']
+    47 ['humble-bundle2', 'humble-bundle']
+    74 ['internets', 'interview']
+    87 ['russian', 'russia']
+    102 ['pop-philosophy', 'philosophy']
+    108 ['biography', 'autobiography']
 
 
-Ha, the classic Austria/Australia thing. Some clusters are problematic due to too-short label names (arab/art), some other clusters are good and show me that I made some mistakes in labeling! French and France should be together, Greece and Greek too. *Neat!*
+Ha, the classic Austria/Australia thing. Some clusters are problematic due to too-short label names (arab/iraq), some other clusters are good and show me that I made some mistakes in labeling! French and France should be together, Greece and Greek too. *Neat!*
 
 (Without normalising the distance by string length clusters like horror/body-horror don't appear.)
 
@@ -510,7 +510,7 @@ pylab.axis("off")
 pylab.show()
 ```
 
-    You have 53189 words in 366 reviews
+    You have 56695 words in 384 reviews
 
 
 
@@ -631,7 +631,7 @@ pylab.axis('off')
 pylab.show()
 ```
 
-    there's a special kind of person, but a posthumous collection of more subtle (or even bigger) biases
+    i think it's supposed to be the worst essay is a vampire: "interview with a strong voice and judges the poem by the use of might (hitler is referenced several times) - the 4 alternating voices quickly blur into one network of states
 
 
 
@@ -646,6 +646,11 @@ I really wonder why it always forces the circular layout - it should connect fro
 
 - Some people on goodreads have complained that their reviews disappear and I feel (but don't know) that I lost at least one, this tracks my exported CSV to check whether it actually happens. So far I haven't observed it.
 - ~~Write automated parser that exports reviews to html/epub/tumblr/blogger/wordpress etc.~~ support for this was added to goodreads)
-- ~~cron job which automatically pulls exported CSV from https://www.goodreads.com/review_porter/goodreads_export.csv (login a bit weird esp. with Facebook login, use API instead? Needs dev key, but easier to do /review/list.xml=USERID than to play Red Queen with Facebook's oauth)~~
+- ~~cron job which automatically pulls exported CSV from https://www.goodreads.com/review_porter/goodreads_export.csv (login a bit weird esp. with Facebook login, use API instead? Needs dev key, but easier to do /review/list.xml=USERID than to play Red Queen with Facebook's oauth)~~ see github.com/philippbayer/Goodreads_to_Tumblr
 - various visualization things in regards to language use
-- RNN to write automated reviews, similar to the Markov one
+- RNN to write automated reviews, similar to the Markov one. also have to look at embeddings to predict category of book?
+
+
+```python
+
+```
