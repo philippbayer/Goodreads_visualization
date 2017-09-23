@@ -84,6 +84,10 @@ rcParams["axes.titlesize"] = 15.0
 rcParams['xtick.labelsize'] = 15
 rcParams['ytick.labelsize'] = 15
 rcParams['font.size'] = 15
+
+from IPython.display import Image
+import requests
+import matplotlib.image as mpimg
 ```
 
     Populating the interactive namespace from numpy and matplotlib
@@ -147,20 +151,6 @@ g = sns.jointplot("Number of Pages", "My Rating", data=cleaned_df, kind="reg", s
 ![png](README_files/README_10_0.png)
 
 
-You can plot the "residuals" (what's left after calculating the regression line in the above plot) to see how useful a regression is - regression is useful when your residuals are randomly distributed around the y=0 line, i.e., it's a good fit.
-
-
-```python
-sns.residplot("Number of Pages", "My Rating", data=cleaned_df,
-              scatter_kws={"s": 80});
-```
-
-
-![png](README_files/README_12_0.png)
-
-
-That doesn't look random to me, with quite a slant towards the negative space! Regression isn't useful here.
-
 I seem to mostly read books at around 200 to 300 pages so it's hard to tell whether I give longer books better ratings. It's also a nice example that in regards to linear regression, a p-value as tiny as this one doesn't mean much, the r-value is still bad.
 
 ***
@@ -214,39 +204,10 @@ pylab.show()
 ```
 
 
-![png](README_files/README_14_0.png)
+![png](README_files/README_12_0.png)
 
 
 There is some *bad* SF out there.
-
-However, the sci-fi score looks normally distributed! Let's check:
-
-
-```python
-#print full_table
-W, p_value = scipy.stats.shapiro(full_table[full_table["Category"] == "sci-fi"]["Rating"])
-if p_value < 0.05:
-    print("Rejecting null hypothesis - data does not come from a normal distribution (p=%s)"%p_value)
-else:
-    print("Cannot reject null hypothesis (p=%s)"%p_value)
-sns.distplot(full_table[full_table["Category"] == "sci-fi"]["Rating"])
-```
-
-    Rejecting null hypothesis - data does not come from a normal distribution (p=1.88832673302e-05)
-
-
-
-
-
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f95ecd0d650>
-
-
-
-
-![png](README_files/README_16_2.png)
-
-
-It does look like a close call, it's a bit skewed towards the rating of 4.
 
 At this point I wonder - since we can assign multiple 'shelves' (tags) to each book, do I have some tags that appear more often together than not? Let's use R!
 
@@ -268,7 +229,7 @@ names_dict = robjects.ListVector(names_dict)
 ```
 
 
-![png](README_files/README_18_0.png)
+![png](README_files/README_14_0.png)
 
 
 Most shelves are 'alone', but 'essays + non-fiction', 'sci-fi + sf' (should clean that up...), 'biography + non-fiction' show the biggest overlap.
@@ -324,6 +285,8 @@ Ha, the classic Austria/Australia thing. Some clusters are problematic due to to
 
 Let's check the "dates read" for each book read and plot the distance between books read in days - shows you how quickly you hop from book to book.
 
+I didn't use Goodreads in 2012 much so let's see how it looks like without 2012:
+
 
 ```python
 # first, transform to datetype and get rid of all invalid dates
@@ -348,26 +311,12 @@ for date in sorted_dates:
         all_days_without_2012.append(days)
     last_date = date
 
-sns.distplot(all_days, axlabel="Distance in days between books read", kde=True)
-pylab.show()
-```
-
-
-![png](README_files/README_23_0.png)
-
-
-Of course, sometimes I just add several at once and guesstimate the correct "date read".
-
-I didn't use Goodreads in 2012 much so let's see how it looks like without 2012:
-
-
-```python
 sns.distplot(all_days_without_2012, axlabel="Distance in days between books read")
 pylab.show()
 ```
 
 
-![png](README_files/README_25_0.png)
+![png](README_files/README_19_0.png)
 
 
 ***
@@ -420,7 +369,7 @@ ax = sns.heatmap(dfp, annot=True)
 ```
 
 
-![png](README_files/README_27_0.png)
+![png](README_files/README_21_0.png)
 
 
 What happened in May 2014?
@@ -440,7 +389,7 @@ pylab.show()
 ```
 
 
-![png](README_files/README_29_0.png)
+![png](README_files/README_23_0.png)
 
 
 It's nice how reading behaviour (Goodreads usage) connects over the months - it slowly in 2013, stays constant in 2014/2015, and now goes down again. You can see when my son was born!
@@ -448,6 +397,524 @@ It's nice how reading behaviour (Goodreads usage) connects over the months - it 
 (Solution: 2016-8-25)
 
 ***
+
+## Compare with Goodreads 10k
+
+
+A helpful soul has uploaded ratings and stats for the 10,000 books on Goodreads. Let's compare those with my ratings!
+
+
+```python
+other = pd.read_csv('./goodbooks-10k/books.csv')
+other.head()
+```
+
+
+
+
+<div>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>book_id</th>
+      <th>goodreads_book_id</th>
+      <th>best_book_id</th>
+      <th>work_id</th>
+      <th>books_count</th>
+      <th>isbn</th>
+      <th>isbn13</th>
+      <th>authors</th>
+      <th>original_publication_year</th>
+      <th>original_title</th>
+      <th>...</th>
+      <th>ratings_count</th>
+      <th>work_ratings_count</th>
+      <th>work_text_reviews_count</th>
+      <th>ratings_1</th>
+      <th>ratings_2</th>
+      <th>ratings_3</th>
+      <th>ratings_4</th>
+      <th>ratings_5</th>
+      <th>image_url</th>
+      <th>small_image_url</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>2767052</td>
+      <td>2767052</td>
+      <td>2792775</td>
+      <td>272</td>
+      <td>439023483</td>
+      <td>9.780439e+12</td>
+      <td>Suzanne Collins</td>
+      <td>2008.0</td>
+      <td>The Hunger Games</td>
+      <td>...</td>
+      <td>4780653</td>
+      <td>4942365</td>
+      <td>155254</td>
+      <td>66715</td>
+      <td>127936</td>
+      <td>560092</td>
+      <td>1481305</td>
+      <td>2706317</td>
+      <td>https://images.gr-assets.com/books/1447303603m...</td>
+      <td>https://images.gr-assets.com/books/1447303603s...</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2</td>
+      <td>3</td>
+      <td>3</td>
+      <td>4640799</td>
+      <td>491</td>
+      <td>439554934</td>
+      <td>9.780440e+12</td>
+      <td>J.K. Rowling, Mary GrandPré</td>
+      <td>1997.0</td>
+      <td>Harry Potter and the Philosopher's Stone</td>
+      <td>...</td>
+      <td>4602479</td>
+      <td>4800065</td>
+      <td>75867</td>
+      <td>75504</td>
+      <td>101676</td>
+      <td>455024</td>
+      <td>1156318</td>
+      <td>3011543</td>
+      <td>https://images.gr-assets.com/books/1474154022m...</td>
+      <td>https://images.gr-assets.com/books/1474154022s...</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3</td>
+      <td>41865</td>
+      <td>41865</td>
+      <td>3212258</td>
+      <td>226</td>
+      <td>316015849</td>
+      <td>9.780316e+12</td>
+      <td>Stephenie Meyer</td>
+      <td>2005.0</td>
+      <td>Twilight</td>
+      <td>...</td>
+      <td>3866839</td>
+      <td>3916824</td>
+      <td>95009</td>
+      <td>456191</td>
+      <td>436802</td>
+      <td>793319</td>
+      <td>875073</td>
+      <td>1355439</td>
+      <td>https://images.gr-assets.com/books/1361039443m...</td>
+      <td>https://images.gr-assets.com/books/1361039443s...</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>4</td>
+      <td>2657</td>
+      <td>2657</td>
+      <td>3275794</td>
+      <td>487</td>
+      <td>61120081</td>
+      <td>9.780061e+12</td>
+      <td>Harper Lee</td>
+      <td>1960.0</td>
+      <td>To Kill a Mockingbird</td>
+      <td>...</td>
+      <td>3198671</td>
+      <td>3340896</td>
+      <td>72586</td>
+      <td>60427</td>
+      <td>117415</td>
+      <td>446835</td>
+      <td>1001952</td>
+      <td>1714267</td>
+      <td>https://images.gr-assets.com/books/1361975680m...</td>
+      <td>https://images.gr-assets.com/books/1361975680s...</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>5</td>
+      <td>4671</td>
+      <td>4671</td>
+      <td>245494</td>
+      <td>1356</td>
+      <td>743273567</td>
+      <td>9.780743e+12</td>
+      <td>F. Scott Fitzgerald</td>
+      <td>1925.0</td>
+      <td>The Great Gatsby</td>
+      <td>...</td>
+      <td>2683664</td>
+      <td>2773745</td>
+      <td>51992</td>
+      <td>86236</td>
+      <td>197621</td>
+      <td>606158</td>
+      <td>936012</td>
+      <td>947718</td>
+      <td>https://images.gr-assets.com/books/1490528560m...</td>
+      <td>https://images.gr-assets.com/books/1490528560s...</td>
+    </tr>
+  </tbody>
+</table>
+<p>5 rows × 23 columns</p>
+</div>
+
+
+
+
+```python
+cleaned_df.head()
+```
+
+
+
+
+<div>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Book Id</th>
+      <th>Title</th>
+      <th>Author</th>
+      <th>Author l-f</th>
+      <th>Additional Authors</th>
+      <th>ISBN</th>
+      <th>ISBN13</th>
+      <th>My Rating</th>
+      <th>Average Rating</th>
+      <th>Publisher</th>
+      <th>...</th>
+      <th>Private Notes</th>
+      <th>Read Count</th>
+      <th>Recommended For</th>
+      <th>Recommended By</th>
+      <th>Owned Copies</th>
+      <th>Original Purchase Date</th>
+      <th>Original Purchase Location</th>
+      <th>Condition</th>
+      <th>Condition Description</th>
+      <th>BCID</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>4</th>
+      <td>25191</td>
+      <td>A Personal Matter</td>
+      <td>Kenzaburō Ōe</td>
+      <td>Ōe, Kenzaburō</td>
+      <td>John Nathan</td>
+      <td>="0802150616"</td>
+      <td>="9780802150615"</td>
+      <td>4</td>
+      <td>3.87</td>
+      <td>Grove Press</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>1</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>25979991</td>
+      <td>Alectryomancer and Other Weird Tales</td>
+      <td>Christopher Slatsky</td>
+      <td>Slatsky, Christopher</td>
+      <td>Jordan Krall</td>
+      <td>=""</td>
+      <td>=""</td>
+      <td>3</td>
+      <td>4.09</td>
+      <td>Dunhams Manor Press</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>1</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>18</th>
+      <td>17303621</td>
+      <td>Der Schneemann</td>
+      <td>Jörg Fauser</td>
+      <td>Fauser, Jörg</td>
+      <td>NaN</td>
+      <td>="3257239211"</td>
+      <td>="9783257239218"</td>
+      <td>3</td>
+      <td>3.65</td>
+      <td>Diogenes</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>1</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>22</th>
+      <td>33399049</td>
+      <td>R for Data Science: Import, Tidy, Transform, V...</td>
+      <td>Hadley Wickham</td>
+      <td>Wickham, Hadley</td>
+      <td>Garrett Grolemund</td>
+      <td>=""</td>
+      <td>=""</td>
+      <td>5</td>
+      <td>4.82</td>
+      <td>O'Reilly Media</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>1</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>23</th>
+      <td>6004348</td>
+      <td>Conquest of the Useless: Reflections from the ...</td>
+      <td>Werner Herzog</td>
+      <td>Herzog, Werner</td>
+      <td>Krishna Winston</td>
+      <td>="0061575534"</td>
+      <td>="9780061575532"</td>
+      <td>4</td>
+      <td>4.21</td>
+      <td>Ecco</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>1</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+<p>5 rows × 31 columns</p>
+</div>
+
+
+
+Is my 'Book Id' the same as the other's table 'goodreads_book_id'?
+
+
+```python
+both = other.merge(cleaned_df, how='inner', left_on='goodreads_book_id', right_on='Book Id')
+print('My reviews: %s, 10k Reviews: %s, Intersection: %s'%(cleaned_df.shape, other.shape, both.shape))
+both.iloc[1]
+```
+
+    My reviews: (611, 31), 10k Reviews: (10000, 23), Intersection: (246, 54)
+
+
+
+
+
+    book_id                                                                       2
+    goodreads_book_id                                                             3
+    best_book_id                                                                  3
+    work_id                                                                 4640799
+    books_count                                                                 491
+    isbn                                                                  439554934
+    isbn13                                                              9.78044e+12
+    authors                                             J.K. Rowling, Mary GrandPré
+    original_publication_year                                                  1997
+    original_title                         Harry Potter and the Philosopher's Stone
+    title                         Harry Potter and the Sorcerer's Stone (Harry P...
+    language_code                                                               eng
+    average_rating                                                             4.44
+    ratings_count                                                           4602479
+    work_ratings_count                                                      4800065
+    work_text_reviews_count                                                   75867
+    ratings_1                                                                 75504
+    ratings_2                                                                101676
+    ratings_3                                                                455024
+    ratings_4                                                               1156318
+    ratings_5                                                               3011543
+    image_url                     https://images.gr-assets.com/books/1474154022m...
+    small_image_url               https://images.gr-assets.com/books/1474154022s...
+    Book Id                                                                       3
+    Title                         Harry Potter and the Sorcerer's Stone (Harry P...
+    Author                                                             J.K. Rowling
+    Author l-f                                                        Rowling, J.K.
+    Additional Authors                                                Mary GrandPré
+    ISBN                                                              ="0439554934"
+    ISBN13                                                         ="9780439554930"
+    My Rating                                                                     3
+    Average Rating                                                             4.44
+    Publisher                                                        Scholastic Inc
+    Binding                                                               Hardcover
+    Number of Pages                                                             320
+    Year Published                                                             1997
+    Original Publication Year                                                  1997
+    Date Read                                                                   NaN
+    Date Added                                                           2012/03/22
+    Bookshelves                                                                 NaN
+    Bookshelves with positions                                                  NaN
+    Exclusive Shelf                                                            read
+    My Review                                                                   NaN
+    Spoiler                                                                     NaN
+    Private Notes                                                               NaN
+    Read Count                                                                    1
+    Recommended For                                                             NaN
+    Recommended By                                                              NaN
+    Owned Copies                                                                  0
+    Original Purchase Date                                                      NaN
+    Original Purchase Location                                                  NaN
+    Condition                                                                   NaN
+    Condition Description                                                       NaN
+    BCID                                                                        NaN
+    Name: 1, dtype: object
+
+
+
+Looks good! Now check which is the most common and the most obscure book in my list
+
+
+```python
+Image(both.sort_values(by='ratings_count').head(1).image_url.iloc[0])
+```
+
+
+
+
+![jpeg](README_files/README_30_0.jpeg)
+
+
+
+
+```python
+Image(both.sort_values(by='ratings_count').tail(1).image_url.iloc[0])
+```
+
+
+
+
+![jpeg](README_files/README_31_0.jpeg)
+
+
+
+For which book does my rating have the highest difference in score?
+
+
+```python
+my_rating = cleaned_df['My Rating']
+other_ratings = cleaned_df['Average Rating']
+cleaned_df['Difference Rating'] = np.abs(my_rating - other_ratings)
+ten_biggest_diff = cleaned_df.sort_values(by='Difference Rating').tail(15)
+
+for x in ten_biggest_diff.iterrows():
+    book_id = x[1]['Book Id']
+    ten_thousand_books_info = other.where(other['goodreads_book_id'] == book_id).dropna()
+    try:
+        this_image_url = ten_thousand_books_info.image_url.iloc[0]
+    except IndexError:
+        # not found in big table
+        continue
+    display(Image(this_image_url))
+    details = x[1]
+    print('Book: %s, My rating: %s Global average rating: %s'%(details['Title'], details['My Rating'], details['Average Rating'] ))
+```
+
+
+![jpeg](README_files/README_33_0.jpeg)
+
+
+    Book: The Perks of Being a Wallflower, My rating: 2 Global average rating: 4.21
+
+
+
+![jpeg](README_files/README_33_2.jpeg)
+
+
+    Book: Ender's Game (Ender's Saga, #1), My rating: 2 Global average rating: 4.3
+
+
+
+![jpeg](README_files/README_33_4.jpeg)
+
+
+    Book: The Hunger Games (The Hunger Games, #1), My rating: 2 Global average rating: 4.34
+
+
+
+![jpeg](README_files/README_33_6.jpeg)
+
+
+    Book: The Book Thief, My rating: 2 Global average rating: 4.36
+
+
+
+![jpeg](README_files/README_33_8.jpeg)
+
+
+    Book: The Martian, My rating: 2 Global average rating: 4.39
+
+
+
+![png](README_files/README_33_10.png)
+
+
+    Book: The Dice Man, My rating: 1 Global average rating: 3.6
+
+
+
+![jpeg](README_files/README_33_12.jpeg)
+
+
+    Book: Rama II (Rama, #2), My rating: 1 Global average rating: 3.66
+
+
+
+![jpeg](README_files/README_33_14.jpeg)
+
+
+    Book: Stranger in a Strange Land, My rating: 1 Global average rating: 3.91
+
+
+
+![jpeg](README_files/README_33_16.jpeg)
+
+
+    Book: To Your Scattered Bodies Go (Riverworld, #1), My rating: 1 Global average rating: 3.94
+
 
 ## plot Word Cloud
 
@@ -514,7 +981,7 @@ pylab.show()
 
 
 
-![png](README_files/README_31_1.png)
+![png](README_files/README_35_1.png)
 
 
 ***
@@ -543,7 +1010,7 @@ plt.show()
 ```
 
 
-![png](README_files/README_33_0.png)
+![png](README_files/README_37_0.png)
 
 
 Monday is procrastination day.
@@ -565,6 +1032,7 @@ Some examples:
 * not being focused on useless mobile apps, but on medical companies that treat death as a sign of dissent
 * the harassment of irs-personnel to get into the dark cave
 * they're doing "good"
+* i think it's supposed to be the worst essay is a vampire: "interview with a strong voice and judges the poem by the use of might (hitler is referenced several times) - the 4 alternating voices quickly blur into one network of states
 
 *why does this work so well*
 
@@ -631,11 +1099,11 @@ pylab.axis('off')
 pylab.show()
 ```
 
-    i think it's supposed to be the worst essay is a vampire: "interview with a strong voice and judges the poem by the use of might (hitler is referenced several times) - the 4 alternating voices quickly blur into one network of states
+    - ishihara shintaro is quoted a few interviews compressed into monologues, followed by the austria's anschluß (the word anschluß appears at least one publication says he lived with in the latin american community is there; it's way too short collection of quasi-chronologically sorted essays on society, however, are too much through time-points, sometimes it's hilarious, more often it's horny-old-man-heinlein-awkward
 
 
 
-![png](README_files/README_35_1.png)
+![png](README_files/README_39_1.png)
 
 
 I really wonder why it always forces the circular layout - it should connect from "translation" to "(i" which in turn connects to a few nodes.
