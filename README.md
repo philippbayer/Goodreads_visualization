@@ -127,7 +127,7 @@ else:
     print("Cannot reject null hypothesis (p=%s)"%p_value)
 ```
 
-    Rejecting null hypothesis - data does not come from a normal distribution (p=3.82965388028e-22)
+    Rejecting null hypothesis - data does not come from a normal distribution (p=3.28701779437e-22)
 
 
 In my case, the data is not normally distributed (in other words, the book scores are not evenly distributed around the middle). If you think about it, this makes sense: most readers don't read perfectly randomly, I avoid books I believe I'd dislike, and choose books that I prefer. I rate those books higher than average, therefore, my curve of scores is slanted towards the right.
@@ -198,7 +198,7 @@ sns.violinplot(x = "Category", y = "Rating", data=full_table, scale='count')
 
 
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f52b41e1990>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f3a40a50710>
 
 
 
@@ -227,12 +227,8 @@ names_dict = robjects.ListVector(names_dict)
 %R -i names_dict -r 150 -w 900 -h 700 upset(fromList(names_dict), order.by = "freq", nsets = 9)
 ```
 
-    The rpy2.ipython extension is already loaded. To reload it, use:
-      %reload_ext rpy2.ipython
 
-
-
-![png](README_files/README_14_1.png)
+![png](README_files/README_14_0.png)
 
 
 Most shelves are 'alone', but 'essays + non-fiction', 'sci-fi + sf' (should clean that up...), 'biography + non-fiction' show the biggest overlap.
@@ -262,19 +258,19 @@ for k in sorted(cluster_dict):
         print k, cluster_dict[k]
 ```
 
-    DBSCAN made 153 clusters for 167 shelves/tags.
+    DBSCAN made 156 clusters for 170 shelves/tags.
     Clusters with more than one member:
     0 ['essay', 'essays']
-    13 ['australia', 'austria']
-    20 ['on-writing', 'on-thinking', 'on-living']
-    27 ['weird-horror', 'body-horror']
-    36 ['history-of-biology', 'history-of-cs', 'history-of-philosophy']
-    39 ['greece', 'greek']
-    44 ['ww2', 'ww1']
-    54 ['humble-bundle2', 'humble-bundle', 'humble-bundle-jpsf']
-    98 ['russian', 'russia']
-    109 ['mythology', 'theology']
-    116 ['pop-philosophy', 'philosophy']
+    14 ['australia', 'austria']
+    21 ['on-writing', 'on-thinking', 'on-living']
+    28 ['weird-horror', 'body-horror']
+    38 ['history-of-biology', 'history-of-cs', 'history-of-philosophy']
+    41 ['greece', 'greek']
+    46 ['ww2', 'ww1']
+    56 ['humble-bundle2', 'humble-bundle', 'humble-bundle-jpsf']
+    100 ['russian', 'russia']
+    111 ['mythology', 'theology']
+    118 ['pop-philosophy', 'philosophy']
 
 
 Ha, the classic Austria/Australia thing. Some clusters are problematic due to too-short label names (arab/iraq), some other clusters are good and show me that I made some mistakes in labeling! French and France should be together, Greece and Greek too. *Neat!*
@@ -413,32 +409,25 @@ print(zip(genders[:5], first_names[:5]))
 genders = pd.Series([x.replace('mostly_female','female').replace('mostly_male','male') for x in genders])
 ```
 
-    [(u'male', 'Kenneth'), (u'male', 'Jon'), (u'female', 'Jane'), (u'male', 'Grayson'), (u'female', 'Shirley')]
+    [(u'mostly_female', 'Mary'), (u'male', 'Homer'), (u'unknown', 'Chimamanda'), (u'male', 'Neil'), (u'male', 'Neil')]
 
 
 
 ```python
 gender_ratios = genders.value_counts()
 print(gender_ratios)
-gender_ratios.plot(kind='bar')
+_ = gender_ratios.plot(kind='bar')
 ```
 
-    male       485
-    unknown     83
-    female      50
+    male       489
+    unknown     84
+    female      51
     andy        11
     dtype: int64
 
 
 
-
-
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f52b3a07750>
-
-
-
-
-![png](README_files/README_26_2.png)
+![png](README_files/README_26_1.png)
 
 
 Now THAT'S gender bias. Do I rate the genders differently?
@@ -450,24 +439,35 @@ cleaned_df['Gender'] = genders
 male_scores = cleaned_df[cleaned_df['Gender'] == 'male']['My Rating'].values
 female_scores = cleaned_df[cleaned_df['Gender'] == 'female']['My Rating'].values
 
-plt.hist([male_scores, female_scores], color=['r','b'], alpha=0.5)
+_ = plt.hist([male_scores, female_scores], color=['r','b'], alpha=0.5)
 ```
 
 
+![png](README_files/README_28_0.png)
 
 
-    ([array([ 10.,   0.,   0.,  73.,   0.,   0.,  62.,   0.,   0.,  13.]),
-      array([  0.,   0.,   0.,  10.,   0.,   0.,   9.,   0.,   0.,   1.])],
-     array([ 2. ,  2.3,  2.6,  2.9,  3.2,  3.5,  3.8,  4.1,  4.4,  4.7,  5. ]),
-     <a list of 2 Lists of Patches objects>)
+Hard to tell any difference since there are so fewer women authors here - let's split them up into different plots
 
 
+```python
+fig, axes = plt.subplots(2,1)
+
+axes[0].hist(male_scores, color='r', alpha=0.5)
+axes[0].set_xlabel('Scores')
+# Make the y-axis label, ticks and tick labels match the line color.
+axes[0].set_ylabel('male scores')
+
+axes[1].hist(female_scores, color='b', alpha=0.5)
+axes[1].set_ylabel('female scores')
+
+fig.tight_layout()
+```
 
 
-![png](README_files/README_28_1.png)
+![png](README_files/README_30_0.png)
 
 
-Are these two samples from the same distribution? Hard to tell since their size is so different, but let's ask Kolmogorov-Smirnov (null hypothesis: they are from the same distribution)
+OK now the distributions look almost identical - are these two samples from the same distribution? Hard to tell since their size is so different, but let's ask Kolmogorov-Smirnov (null hypothesis: they are from the same distribution)
 
 
 ```python
@@ -477,7 +477,7 @@ scipy.stats.ks_2samp(male_scores, female_scores)
 
 
 
-    Ks_2sampResult(statistic=0.063291139240506333, pvalue=0.9999991671025894)
+    Ks_2sampResult(statistic=0.062888198757763969, pvalue=0.99999997602467239)
 
 
 
@@ -622,17 +622,17 @@ cleaned_df.head(2)
   </thead>
   <tbody>
     <tr>
-      <th>0</th>
-      <td>1533656</td>
-      <td>Wake in Fright</td>
-      <td>Kenneth Cook</td>
-      <td>Cook, Kenneth</td>
+      <th>1</th>
+      <td>36525023</td>
+      <td>Women &amp; Power: A Manifesto</td>
+      <td>Mary Beard</td>
+      <td>Beard, Mary</td>
       <td>NaN</td>
-      <td>="185375482X"</td>
-      <td>="9781853754821"</td>
+      <td>="1631494759"</td>
+      <td>="9781631494758"</td>
       <td>4</td>
-      <td>3.95</td>
-      <td>Prion</td>
+      <td>4.32</td>
+      <td>Liveright</td>
       <td>...</td>
       <td>1</td>
       <td>NaN</td>
@@ -646,17 +646,17 @@ cleaned_df.head(2)
       <td>male</td>
     </tr>
     <tr>
-      <th>1</th>
-      <td>164372</td>
-      <td>Advice to Writers: A Compendium of Quotes, Ane...</td>
-      <td>Jon Winokur</td>
-      <td>Winokur, Jon</td>
-      <td>NaN</td>
-      <td>="0679763414"</td>
-      <td>="9780679763413"</td>
-      <td>3</td>
-      <td>3.94</td>
-      <td>Vintage</td>
+      <th>2</th>
+      <td>34068470</td>
+      <td>The Odyssey</td>
+      <td>Homer</td>
+      <td>Homer, Homer</td>
+      <td>Emily Wilson</td>
+      <td>="0393089053"</td>
+      <td>="9780393089059"</td>
+      <td>5</td>
+      <td>3.73</td>
+      <td>W. W. Norton  Company</td>
       <td>...</td>
       <td>1</td>
       <td>NaN</td>
@@ -667,7 +667,7 @@ cleaned_df.head(2)
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
-      <td>male</td>
+      <td>unknown</td>
     </tr>
   </tbody>
 </table>
@@ -684,7 +684,7 @@ both = other.merge(cleaned_df, how='inner', left_on='goodreads_book_id', right_o
 print('My reviews: %s, 10k Reviews: %s, Intersection: %s'%(cleaned_df.shape, other.shape, both.shape))
 ```
 
-    My reviews: (629, 32), 10k Reviews: (10000, 23), Intersection: (248, 55)
+    My reviews: (635, 32), 10k Reviews: (10000, 23), Intersection: (251, 55)
 
 
 Looks good! Now check which is the most common and the most obscure book in my list
@@ -697,7 +697,7 @@ Image(both.sort_values(by='ratings_count').head(1).image_url.iloc[0])
 
 
 
-![jpeg](README_files/README_38_0.jpeg)
+![jpeg](README_files/README_40_0.jpeg)
 
 
 
@@ -709,7 +709,7 @@ Image(both.sort_values(by='ratings_count').tail(1).image_url.iloc[0])
 
 
 
-![jpeg](README_files/README_39_0.jpeg)
+![jpeg](README_files/README_41_0.jpeg)
 
 
 
@@ -730,7 +730,7 @@ for x in ten_biggest_diff.iterrows():
     except IndexError:
         # not found in big table
         continue
-    #display(Image(this_image_url))
+    display(Image(this_image_url))
     details = x[1]
     print('Book: %s, My rating: %s Global average rating: %s'%(details['Title'], details['My Rating'], details['Average Rating'] ))
 ```
@@ -752,12 +752,12 @@ sns.distplot(cleaned_df['Difference Rating'], kde=False)
 
 
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f52b6aaa710>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f3a21e2aa10>
 
 
 
 
-![png](README_files/README_43_1.png)
+![png](README_files/README_45_1.png)
 
 
 Not really, mostly 0 and 1 difference.
@@ -823,11 +823,11 @@ pylab.axis("off")
 pylab.show()
 ```
 
-    You have 61346 words in 401 reviews
+    You have 63029 words in 406 reviews
 
 
 
-![png](README_files/README_46_1.png)
+![png](README_files/README_48_1.png)
 
 
 ***
@@ -856,7 +856,7 @@ plt.show()
 ```
 
 
-![png](README_files/README_48_0.png)
+![png](README_files/README_50_0.png)
 
 
 Monday is procrastination day.
@@ -946,11 +946,11 @@ pylab.axis('off')
 pylab.show()
 ```
 
-    but they don't shelve the case of hans-joachim rehse (only r
+    parasite in your closet" books i normally read - lots of fun
 
 
 
-![png](README_files/README_50_1.png)
+![png](README_files/README_52_1.png)
 
 
 I really wonder why it always forces the circular layout - it should connect from "translation" to "(i" which in turn connects to a few nodes.
