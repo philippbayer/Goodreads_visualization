@@ -198,7 +198,7 @@ sns.violinplot(x = "Category", y = "Rating", data=full_table, scale='count')
 
 
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7efbf6419710>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f86b655c7d0>
 
 
 
@@ -641,6 +641,8 @@ other_genders = pd.Series([d.get_gender(name) for name in other_first_names])
 gender_ratios = other_genders.value_counts()
 print(gender_ratios)
 _ = gender_ratios.plot(kind='bar')
+
+other['Gender'] = other_genders
 ```
 
     male             4643
@@ -677,71 +679,7 @@ fig.tight_layout()
 ```
 
 
-    ---------------------------------------------------------------------------
-
-    KeyError                                  Traceback (most recent call last)
-
-    <ipython-input-19-e05402fa79b0> in <module>()
-    ----> 1 male_scores = other[other['Gender'] == 'male']['average_rating'].values
-          2 female_scores = other[other['Gender'] == 'female']['average_rating'].values
-          3 
-          4 fig, axes = plt.subplots(2,1)
-          5 
-
-
-    /usr/lib64/python2.7/site-packages/pandas/core/frame.pyc in __getitem__(self, key)
-       2057             return self._getitem_multilevel(key)
-       2058         else:
-    -> 2059             return self._getitem_column(key)
-       2060 
-       2061     def _getitem_column(self, key):
-
-
-    /usr/lib64/python2.7/site-packages/pandas/core/frame.pyc in _getitem_column(self, key)
-       2064         # get column
-       2065         if self.columns.is_unique:
-    -> 2066             return self._get_item_cache(key)
-       2067 
-       2068         # duplicate columns & possible reduce dimensionality
-
-
-    /usr/lib64/python2.7/site-packages/pandas/core/generic.pyc in _get_item_cache(self, item)
-       1384         res = cache.get(item)
-       1385         if res is None:
-    -> 1386             values = self._data.get(item)
-       1387             res = self._box_item_values(item, values)
-       1388             cache[item] = res
-
-
-    /usr/lib64/python2.7/site-packages/pandas/core/internals.pyc in get(self, item, fastpath)
-       3539 
-       3540             if not isnull(item):
-    -> 3541                 loc = self.items.get_loc(item)
-       3542             else:
-       3543                 indexer = np.arange(len(self.items))[isnull(self.items)]
-
-
-    /usr/lib64/python2.7/site-packages/pandas/indexes/base.pyc in get_loc(self, key, method, tolerance)
-       2134                 return self._engine.get_loc(key)
-       2135             except KeyError:
-    -> 2136                 return self._engine.get_loc(self._maybe_cast_indexer(key))
-       2137 
-       2138         indexer = self.get_indexer([key], method=method, tolerance=tolerance)
-
-
-    pandas/index.pyx in pandas.index.IndexEngine.get_loc (pandas/index.c:4443)()
-
-
-    pandas/index.pyx in pandas.index.IndexEngine.get_loc (pandas/index.c:4289)()
-
-
-    pandas/src/hashtable_class_helper.pxi in pandas.hashtable.PyObjectHashTable.get_item (pandas/hashtable.c:13733)()
-
-
-    pandas/src/hashtable_class_helper.pxi in pandas.hashtable.PyObjectHashTable.get_item (pandas/hashtable.c:13687)()
-
-
-    KeyError: 'Gender'
+![png](README_files/README_39_0.png)
 
 
 Very similar, again
@@ -754,6 +692,9 @@ both = other.merge(cleaned_df, how='inner', left_on='goodreads_book_id', right_o
 print('My reviews: %s, 10k Reviews: %s, Intersection: %s'%(cleaned_df.shape, other.shape, both.shape))
 ```
 
+    My reviews: (635, 32), 10k Reviews: (10000, 24), Intersection: (251, 56)
+
+
 Looks good! Now check which is the most common and the most obscure book in my list
 
 
@@ -761,12 +702,26 @@ Looks good! Now check which is the most common and the most obscure book in my l
 Image(both.sort_values(by='ratings_count').head(1).image_url.iloc[0])
 ```
 
+
+
+
+![jpeg](README_files/README_44_0.jpeg)
+
+
+
 Too Loud A Solitude, a wonderful book, you should read it!
 
 
 ```python
 Image(both.sort_values(by='ratings_count').tail(1).image_url.iloc[0])
 ```
+
+
+
+
+![jpeg](README_files/README_46_0.jpeg)
+
+
 
 For which book does my rating have the highest difference in score?
 
@@ -790,12 +745,58 @@ for x in ten_biggest_diff.iterrows():
     print('Book: %s, My rating: %s Global average rating: %s'%(details['Title'], details['My Rating'], details['Average Rating'] ))
 ```
 
+
+![jpeg](README_files/README_48_0.jpeg)
+
+
+    Book: The Martian, My rating: 2 Global average rating: 4.4
+
+
+
+![png](README_files/README_48_2.png)
+
+
+    Book: The Dice Man, My rating: 1 Global average rating: 3.59
+
+
+
+![jpeg](README_files/README_48_4.jpeg)
+
+
+    Book: Rama II (Rama, #2), My rating: 1 Global average rating: 3.66
+
+
+
+![jpeg](README_files/README_48_6.jpeg)
+
+
+    Book: Stranger in a Strange Land, My rating: 1 Global average rating: 3.91
+
+
+
+![jpeg](README_files/README_48_8.jpeg)
+
+
+    Book: To Your Scattered Bodies Go (Riverworld, #1), My rating: 1 Global average rating: 3.94
+
+
 Do I have many differences in how I rate my book when compared with the community?
 
 
 ```python
 sns.distplot(cleaned_df['Difference Rating'], kde=False)
 ```
+
+
+
+
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f86979e20d0>
+
+
+
+
+![png](README_files/README_50_1.png)
+
 
 Not really, mostly 0 and 1 difference.
 
@@ -860,6 +861,13 @@ pylab.axis("off")
 pylab.show()
 ```
 
+    You have 63029 words in 406 reviews
+
+
+
+![png](README_files/README_53_1.png)
+
+
 ***
 
 ## plot books read vs. week-day
@@ -884,6 +892,10 @@ plt.tight_layout()
 plt.show()
 
 ```
+
+
+![png](README_files/README_55_0.png)
+
 
 Monday is procrastination day.
 
@@ -971,6 +983,13 @@ nx.draw_networkx_labels(G, pos, font_size=10, font_family='sans-serif')
 pylab.axis('off')
 pylab.show()
 ```
+
+    did quite poorly in terms of revenue, i guess
+
+
+
+![png](README_files/README_57_1.png)
+
 
 I really wonder why it always forces the circular layout - it should connect from "translation" to "(i" which in turn connects to a few nodes.
 
