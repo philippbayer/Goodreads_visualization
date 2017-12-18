@@ -79,6 +79,9 @@ sns.set_palette("coolwarm")
 
 # for plotting images
 from IPython.display import Image
+
+# for gender guessing
+import gender_guesser.detector as gender
 ```
 
     Populating the interactive namespace from numpy and matplotlib
@@ -195,7 +198,7 @@ sns.violinplot(x = "Category", y = "Rating", data=full_table, scale='count')
 
 
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f42ff0024d0>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f52b41e1990>
 
 
 
@@ -224,8 +227,12 @@ names_dict = robjects.ListVector(names_dict)
 %R -i names_dict -r 150 -w 900 -h 700 upset(fromList(names_dict), order.by = "freq", nsets = 9)
 ```
 
+    The rpy2.ipython extension is already loaded. To reload it, use:
+      %reload_ext rpy2.ipython
 
-![png](README_files/README_14_0.png)
+
+
+![png](README_files/README_14_1.png)
 
 
 Most shelves are 'alone', but 'essays + non-fiction', 'sci-fi + sf' (should clean that up...), 'biography + non-fiction' show the biggest overlap.
@@ -391,6 +398,94 @@ It's nice how reading behaviour (Goodreads usage) connects over the months - it 
 
 ***
 
+## Guessing authors' genders
+
+Let's check whether I read mostly male or female authors using the gender-guesser package!
+
+
+```python
+first_names = cleaned_df['Author'].str.split(' ',expand=True)[0]
+d = gender.Detector(case_sensitive=False)
+
+genders = [d.get_gender(name) for name in first_names]
+print(zip(genders[:5], first_names[:5]))
+# let's also add those few 'mostly_female' and 'mostly_male' into the main grou
+genders = pd.Series([x.replace('mostly_female','female').replace('mostly_male','male') for x in genders])
+```
+
+    [(u'male', 'Kenneth'), (u'male', 'Jon'), (u'female', 'Jane'), (u'male', 'Grayson'), (u'female', 'Shirley')]
+
+
+
+```python
+gender_ratios = genders.value_counts()
+print(gender_ratios)
+gender_ratios.plot(kind='bar')
+```
+
+    male       485
+    unknown     83
+    female      50
+    andy        11
+    dtype: int64
+
+
+
+
+
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f52b3a07750>
+
+
+
+
+![png](README_files/README_26_2.png)
+
+
+Now THAT'S gender bias. Do I rate the genders differently?
+
+
+```python
+cleaned_df['Gender'] = genders
+
+male_scores = cleaned_df[cleaned_df['Gender'] == 'male']['My Rating'].values
+female_scores = cleaned_df[cleaned_df['Gender'] == 'female']['My Rating'].values
+
+plt.hist([male_scores, female_scores], color=['r','b'], alpha=0.5)
+```
+
+
+
+
+    ([array([ 10.,   0.,   0.,  73.,   0.,   0.,  62.,   0.,   0.,  13.]),
+      array([  0.,   0.,   0.,  10.,   0.,   0.,   9.,   0.,   0.,   1.])],
+     array([ 2. ,  2.3,  2.6,  2.9,  3.2,  3.5,  3.8,  4.1,  4.4,  4.7,  5. ]),
+     <a list of 2 Lists of Patches objects>)
+
+
+
+
+![png](README_files/README_28_1.png)
+
+
+Are these two samples from the same distribution? Hard to tell since their size is so different, but let's ask Kolmogorov-Smirnov (null hypothesis: they are from the same distribution)
+
+
+```python
+scipy.stats.ks_2samp(male_scores, female_scores)
+```
+
+
+
+
+    Ks_2sampResult(statistic=0.063291139240506333, pvalue=0.9999991671025894)
+
+
+
+We cannot reject the null hypthesis as the p-value is very, very high. (but again, there are so few female scores...)
+
+
+***
+
 ## Compare with Goodreads 10k
 
 
@@ -513,7 +608,6 @@ cleaned_df.head(2)
       <th>Average Rating</th>
       <th>Publisher</th>
       <th>...</th>
-      <th>Private Notes</th>
       <th>Read Count</th>
       <th>Recommended For</th>
       <th>Recommended By</th>
@@ -523,6 +617,7 @@ cleaned_df.head(2)
       <th>Condition</th>
       <th>Condition Description</th>
       <th>BCID</th>
+      <th>Gender</th>
     </tr>
   </thead>
   <tbody>
@@ -539,7 +634,6 @@ cleaned_df.head(2)
       <td>3.95</td>
       <td>Prion</td>
       <td>...</td>
-      <td>NaN</td>
       <td>1</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -549,6 +643,7 @@ cleaned_df.head(2)
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
+      <td>male</td>
     </tr>
     <tr>
       <th>1</th>
@@ -563,7 +658,6 @@ cleaned_df.head(2)
       <td>3.94</td>
       <td>Vintage</td>
       <td>...</td>
-      <td>NaN</td>
       <td>1</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -573,10 +667,11 @@ cleaned_df.head(2)
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
+      <td>male</td>
     </tr>
   </tbody>
 </table>
-<p>2 rows × 31 columns</p>
+<p>2 rows × 32 columns</p>
 </div>
 
 
@@ -589,7 +684,7 @@ both = other.merge(cleaned_df, how='inner', left_on='goodreads_book_id', right_o
 print('My reviews: %s, 10k Reviews: %s, Intersection: %s'%(cleaned_df.shape, other.shape, both.shape))
 ```
 
-    My reviews: (629, 31), 10k Reviews: (10000, 23), Intersection: (248, 54)
+    My reviews: (629, 32), 10k Reviews: (10000, 23), Intersection: (248, 55)
 
 
 Looks good! Now check which is the most common and the most obscure book in my list
@@ -602,7 +697,7 @@ Image(both.sort_values(by='ratings_count').head(1).image_url.iloc[0])
 
 
 
-![jpeg](README_files/README_30_0.jpeg)
+![jpeg](README_files/README_38_0.jpeg)
 
 
 
@@ -614,7 +709,7 @@ Image(both.sort_values(by='ratings_count').tail(1).image_url.iloc[0])
 
 
 
-![jpeg](README_files/README_31_0.jpeg)
+![jpeg](README_files/README_39_0.jpeg)
 
 
 
@@ -635,43 +730,15 @@ for x in ten_biggest_diff.iterrows():
     except IndexError:
         # not found in big table
         continue
-    display(Image(this_image_url))
+    #display(Image(this_image_url))
     details = x[1]
     print('Book: %s, My rating: %s Global average rating: %s'%(details['Title'], details['My Rating'], details['Average Rating'] ))
 ```
 
-
-![jpeg](README_files/README_33_0.jpeg)
-
-
     Book: The Martian, My rating: 2 Global average rating: 4.4
-
-
-
-![png](README_files/README_33_2.png)
-
-
     Book: The Dice Man, My rating: 1 Global average rating: 3.59
-
-
-
-![jpeg](README_files/README_33_4.jpeg)
-
-
     Book: Rama II (Rama, #2), My rating: 1 Global average rating: 3.66
-
-
-
-![jpeg](README_files/README_33_6.jpeg)
-
-
     Book: Stranger in a Strange Land, My rating: 1 Global average rating: 3.91
-
-
-
-![jpeg](README_files/README_33_8.jpeg)
-
-
     Book: To Your Scattered Bodies Go (Riverworld, #1), My rating: 1 Global average rating: 3.94
 
 
@@ -685,12 +752,12 @@ sns.distplot(cleaned_df['Difference Rating'], kde=False)
 
 
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f42ebf97910>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f52b6aaa710>
 
 
 
 
-![png](README_files/README_35_1.png)
+![png](README_files/README_43_1.png)
 
 
 Not really, mostly 0 and 1 difference.
@@ -760,7 +827,7 @@ pylab.show()
 
 
 
-![png](README_files/README_38_1.png)
+![png](README_files/README_46_1.png)
 
 
 ***
@@ -789,7 +856,7 @@ plt.show()
 ```
 
 
-![png](README_files/README_40_0.png)
+![png](README_files/README_48_0.png)
 
 
 Monday is procrastination day.
@@ -879,11 +946,11 @@ pylab.axis('off')
 pylab.show()
 ```
 
-    sometimes it's so much jägermeister in 20 years, or this one, stranger in a biography on huxley, "darwin's bulldog", next - luckily adrian desmond wrote on, too
+    but they don't shelve the case of hans-joachim rehse (only r
 
 
 
-![png](README_files/README_42_1.png)
+![png](README_files/README_50_1.png)
 
 
 I really wonder why it always forces the circular layout - it should connect from "translation" to "(i" which in turn connects to a few nodes.
