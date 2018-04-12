@@ -108,7 +108,7 @@ g = sns.distplot(cleaned_df["My Rating"], kde=False)
 
 
 
-    ('Average: 3.61', 'Median: 4.0')
+    ('Average: 3.62', 'Median: 4.0')
 
 
 
@@ -127,7 +127,7 @@ else:
     print("Cannot reject null hypothesis (p=%s)"%p_value)
 ```
 
-    Rejecting null hypothesis - data does not come from a normal distribution (p=3.28701779437e-22)
+    Rejecting null hypothesis - data does not come from a normal distribution (p=7.49173881059e-23)
 
 
 In my case, the data is not normally distributed (in other words, the book scores are not evenly distributed around the middle). If you think about it, this makes sense: most readers don't read perfectly randomly, I avoid books I believe I'd dislike, and choose books that I prefer. I rate those books higher than average, therefore, my curve of scores is slanted towards the right.
@@ -198,7 +198,7 @@ sns.violinplot(x = "Category", y = "Rating", data=full_table, scale='count')
 
 
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f86b655c7d0>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7fd37b53ce10>
 
 
 
@@ -258,19 +258,19 @@ for k in sorted(cluster_dict):
         print k, cluster_dict[k]
 ```
 
-    DBSCAN made 156 clusters for 170 shelves/tags.
+    DBSCAN made 163 clusters for 178 shelves/tags.
     Clusters with more than one member:
     0 ['essay', 'essays']
-    14 ['australia', 'austria']
-    21 ['on-writing', 'on-thinking', 'on-living']
-    28 ['weird-horror', 'body-horror']
-    38 ['history-of-biology', 'history-of-cs', 'history-of-philosophy']
-    41 ['greece', 'greek']
-    46 ['ww2', 'ww1']
-    56 ['humble-bundle2', 'humble-bundle', 'humble-bundle-jpsf']
-    100 ['russian', 'russia']
-    111 ['mythology', 'theology']
-    118 ['pop-philosophy', 'philosophy']
+    16 ['australia', 'austria']
+    23 ['on-writing', 'on-thinking', 'on-living']
+    37 ['humble-bundle-jpsf', 'humble-bundle2', 'humble-bundle']
+    41 ['history-of-biology', 'history-of-philosophy']
+    44 ['greece', 'greek']
+    49 ['sociology', 'psychology', 'mythology', 'theology']
+    60 ['ww1', 'ww2']
+    106 ['russian', 'russia']
+    112 ['future', 'nature']
+    124 ['pop-philosophy', 'philosophy']
 
 
 Ha, the classic Austria/Australia thing. Some clusters are problematic due to too-short label names (arab/iraq), some other clusters are good and show me that I made some mistakes in labeling! French and France should be together, Greece and Greek too. *Neat!*
@@ -370,6 +370,8 @@ ax = sns.heatmap(dfp, annot=True)
 
 What happened in May 2014?
 
+Update in 2018 - currently the 'date_read' column doesn't accurately track which books were actually read, it's weird, investigating 
+
 ***
 
 ## Plot books read by year
@@ -409,7 +411,7 @@ print(zip(genders[:5], first_names[:5]))
 genders = pd.Series([x.replace('mostly_female','female').replace('mostly_male','male') for x in genders])
 ```
 
-    [(u'mostly_female', 'Mary'), (u'male', 'Homer'), (u'unknown', 'Chimamanda'), (u'male', 'Neil'), (u'male', 'Neil')]
+    [(u'male', 'Charles'), (u'male', 'Michel'), (u'unknown', 'Plato'), (u'female', 'Joan'), (u'female', 'Ludmilla')]
 
 
 
@@ -419,9 +421,9 @@ print(gender_ratios)
 _ = gender_ratios.plot(kind='bar')
 ```
 
-    male       489
-    unknown     84
-    female      51
+    male       503
+    unknown     95
+    female      56
     andy        11
     dtype: int64
 
@@ -452,12 +454,12 @@ Hard to tell any difference since there are so fewer women authors here - let's 
 ```python
 fig, axes = plt.subplots(2,1)
 
-axes[0].hist(male_scores, color='r', alpha=0.5)
+axes[0].hist(male_scores, color='r', alpha=0.5, bins=5)
 axes[0].set_xlabel('Scores')
 # Make the y-axis label, ticks and tick labels match the line color.
 axes[0].set_ylabel('male scores')
 
-axes[1].hist(female_scores, color='b', alpha=0.5)
+axes[1].hist(female_scores, color='b', alpha=0.5, bins=5)
 axes[1].set_ylabel('female scores')
 
 fig.tight_layout()
@@ -467,7 +469,7 @@ fig.tight_layout()
 ![png](README_files/README_30_0.png)
 
 
-OK now the distributions look almost identical - are these two samples from the same distribution? Hard to tell since their size is so different, but let's ask Kolmogorov-Smirnov (null hypothesis: they are from the same distribution)
+Are these two samples from the same distribution? Hard to tell since their size is so different, but let's ask Kolmogorov-Smirnov (null hypothesis: they are from the same distribution)
 
 
 ```python
@@ -477,7 +479,7 @@ scipy.stats.ks_2samp(male_scores, female_scores)
 
 
 
-    Ks_2sampResult(statistic=0.062888198757763969, pvalue=0.99999997602467239)
+    Ks_2sampResult(statistic=0.1875, pvalue=0.6339786084215872)
 
 
 
@@ -682,7 +684,7 @@ fig.tight_layout()
 ![png](README_files/README_39_0.png)
 
 
-Very similar, again
+Very similar, again, with a slight shift to the right in the 'female scores'
 
 Is my 'Book Id' the same as the other's table 'goodreads_book_id'?
 
@@ -692,7 +694,7 @@ both = other.merge(cleaned_df, how='inner', left_on='goodreads_book_id', right_o
 print('My reviews: %s, 10k Reviews: %s, Intersection: %s'%(cleaned_df.shape, other.shape, both.shape))
 ```
 
-    My reviews: (635, 32), 10k Reviews: (10000, 24), Intersection: (251, 56)
+    My reviews: (665, 32), 10k Reviews: (10000, 24), Intersection: (253, 56)
 
 
 Looks good! Now check which is the most common and the most obscure book in my list
@@ -756,14 +758,14 @@ for x in ten_biggest_diff.iterrows():
 ![png](README_files/README_48_2.png)
 
 
-    Book: The Dice Man, My rating: 1 Global average rating: 3.59
+    Book: The Dice Man, My rating: 1 Global average rating: 3.6
 
 
 
 ![jpeg](README_files/README_48_4.jpeg)
 
 
-    Book: Rama II (Rama, #2), My rating: 1 Global average rating: 3.66
+    Book: Rama II (Rama, #2), My rating: 1 Global average rating: 3.67
 
 
 
@@ -790,7 +792,7 @@ sns.distplot(cleaned_df['Difference Rating'], kde=False)
 
 
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f86979e20d0>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7fd36689a890>
 
 
 
@@ -861,7 +863,7 @@ pylab.axis("off")
 pylab.show()
 ```
 
-    You have 63029 words in 406 reviews
+    You have 68581 words in 435 reviews
 
 
 
@@ -971,7 +973,7 @@ for partner in values:
     edge_weight = values[partner]
     G.add_weighted_edges_from([ (good_key, partner, edge_weight) ])
 
-pos = nx.spring_layout(G)
+pos = nx.shell_layout(G)
 
 nx.draw_networkx_nodes(G, pos, node_color = 'white', node_size = 2500)
 
@@ -984,7 +986,7 @@ pylab.axis('off')
 pylab.show()
 ```
 
-    did quite poorly in terms of revenue, i guess
+    the holocaust itself is told mostly with the chapter about something in his relatively dry writing style may be off-putting to some current superpowers:enthusiasts for empire argued that rome had a pokemon-like obsession with collecting bugs, the voyage of the war there's a lot of dostoevsky's lifework) and the echoes of all the international parties who have since become obsolete
 
 
 
