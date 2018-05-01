@@ -127,7 +127,7 @@ else:
     print("Cannot reject null hypothesis (p=%s)"%p_value)
 ```
 
-    Rejecting null hypothesis - data does not come from a normal distribution (p=7.49173881059e-23)
+    Rejecting null hypothesis - data does not come from a normal distribution (p=7.07092190733e-23)
 
 
 In my case, the data is not normally distributed (in other words, the book scores are not evenly distributed around the middle). If you think about it, this makes sense: most readers don't read perfectly randomly, I avoid books I believe I'd dislike, and choose books that I prefer. I rate those books higher than average, therefore, my curve of scores is slanted towards the right.
@@ -198,7 +198,7 @@ sns.violinplot(x = "Category", y = "Rating", data=full_table, scale='count')
 
 
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7fd37b53ce10>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7fde53956090>
 
 
 
@@ -370,7 +370,7 @@ ax = sns.heatmap(dfp, annot=True)
 
 What happened in May 2014?
 
-Update in 2018 - currently the 'date_read' column doesn't accurately track which books were actually read, it's weird, investigating 
+Update in 2018 - currently the 'date_read' column doesn't accurately track which books were actually read, this is a bug on Goodreads' end
 
 ***
 
@@ -411,7 +411,7 @@ print(zip(genders[:5], first_names[:5]))
 genders = pd.Series([x.replace('mostly_female','female').replace('mostly_male','male') for x in genders])
 ```
 
-    [(u'male', 'Charles'), (u'male', 'Michel'), (u'unknown', 'Plato'), (u'female', 'Joan'), (u'female', 'Ludmilla')]
+    [(u'male', 'Thomas'), (u'male', 'Paul'), (u'unknown', 'Plato'), (u'male', 'Michel'), (u'female', 'Joan')]
 
 
 
@@ -421,7 +421,7 @@ print(gender_ratios)
 _ = gender_ratios.plot(kind='bar')
 ```
 
-    male       503
+    male       504
     unknown     95
     female      56
     andy        11
@@ -454,12 +454,12 @@ Hard to tell any difference since there are so fewer women authors here - let's 
 ```python
 fig, axes = plt.subplots(2,1)
 
-axes[0].hist(male_scores, color='r', alpha=0.5, bins=5)
+axes[0].hist(male_scores, color='r', alpha=0.5, bins=10)
 axes[0].set_xlabel('Scores')
 # Make the y-axis label, ticks and tick labels match the line color.
 axes[0].set_ylabel('male scores')
 
-axes[1].hist(female_scores, color='b', alpha=0.5, bins=5)
+axes[1].hist(female_scores, color='b', alpha=0.5, bins=10)
 axes[1].set_ylabel('female scores')
 
 fig.tight_layout()
@@ -479,7 +479,7 @@ scipy.stats.ks_2samp(male_scores, female_scores)
 
 
 
-    Ks_2sampResult(statistic=0.1875, pvalue=0.6339786084215872)
+    Ks_2sampResult(statistic=0.04300489929232444, pvalue=0.9999999999998631)
 
 
 
@@ -694,7 +694,7 @@ both = other.merge(cleaned_df, how='inner', left_on='goodreads_book_id', right_o
 print('My reviews: %s, 10k Reviews: %s, Intersection: %s'%(cleaned_df.shape, other.shape, both.shape))
 ```
 
-    My reviews: (665, 32), 10k Reviews: (10000, 24), Intersection: (253, 56)
+    My reviews: (666, 32), 10k Reviews: (10000, 24), Intersection: (253, 56)
 
 
 Looks good! Now check which is the most common and the most obscure book in my list
@@ -758,7 +758,7 @@ for x in ten_biggest_diff.iterrows():
 ![png](README_files/README_48_2.png)
 
 
-    Book: The Dice Man, My rating: 1 Global average rating: 3.6
+    Book: The Dice Man, My rating: 1 Global average rating: 3.59
 
 
 
@@ -792,7 +792,7 @@ sns.distplot(cleaned_df['Difference Rating'], kde=False)
 
 
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7fd36689a890>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7fde3ec6ecd0>
 
 
 
@@ -863,7 +863,7 @@ pylab.axis("off")
 pylab.show()
 ```
 
-    You have 68581 words in 435 reviews
+    You have 68649 words in 436 reviews
 
 
 
@@ -986,14 +986,12 @@ pylab.axis('off')
 pylab.show()
 ```
 
-    the holocaust itself is told mostly with the chapter about something in his relatively dry writing style may be off-putting to some current superpowers:enthusiasts for empire argued that rome had a pokemon-like obsession with collecting bugs, the voyage of the war there's a lot of dostoevsky's lifework) and the echoes of all the international parties who have since become obsolete
+    a serious case of impostor's syndrome
 
 
 
 ![png](README_files/README_57_1.png)
 
-
-I really wonder why it always forces the circular layout - it should connect from "translation" to "(i" which in turn connects to a few nodes.
 
 ***
 
