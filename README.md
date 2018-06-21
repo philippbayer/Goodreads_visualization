@@ -11,10 +11,14 @@ The text you're reading is generated from a jupyter notebook by the Makefile. If
     
 to get the interactive version. In there, replace the path to my Goodreads exported file by yours in the ipynb file, and then run click on Cell -> Run All.
 
+** WARNING **
+It seems that there's currently a bug on Goodreads' end with the export of data, as many recently 'read' books have a read-date which is shown on the web page but doesn't show up in the CSV.
+
 ## Dependencies
 
-* Python (2?)
+* Python (3! rpy2 doesn't work under Python2 any more)
 * Jupyter
+* R (for rpy2)
 
 ### Python packages
 
@@ -27,10 +31,12 @@ to get the interactive version. In there, replace the path to my Goodreads expor
 * scikit-learn
 * distance
 * image (PIL inside python for some weird reason)
+* gender_guesser
+* rpy2
 
 To install all:
 
-    pip install seaborn wordcloud nltk networkx pymarkovchain image sklearn distance
+    pip install seaborn wordcloud nltk networkx pymarkovchain image sklearn distance gender_guesser rpy2
 
 ## Licenses
 
@@ -44,7 +50,6 @@ OK, let's start!
 
 ```python
 % pylab inline
-
 
 # for most plots
 import numpy as np
@@ -82,6 +87,13 @@ from IPython.display import Image
 
 # for gender guessing
 import gender_guesser.detector as gender
+
+# for R
+import pandas
+from rpy2 import robjects
+
+import matplotlib.pyplot as plt
+plt.rcParams['figure.figsize'] = [10, 5]
 ```
 
     Populating the interactive namespace from numpy and matplotlib
@@ -127,7 +139,7 @@ else:
     print("Cannot reject null hypothesis (p=%s)"%p_value)
 ```
 
-    Rejecting null hypothesis - data does not come from a normal distribution (p=7.07092190733e-23)
+    Rejecting null hypothesis - data does not come from a normal distribution (p=5.541150849244537e-23)
 
 
 In my case, the data is not normally distributed (in other words, the book scores are not evenly distributed around the middle). If you think about it, this makes sense: most readers don't read perfectly randomly, I avoid books I believe I'd dislike, and choose books that I prefer. I rate those books higher than average, therefore, my curve of scores is slanted towards the right.
@@ -195,15 +207,21 @@ full_table = pd.DataFrame({"Category":names, "Rating":ratings})
 sns.violinplot(x = "Category", y = "Rating", data=full_table, scale='count')
 ```
 
+    /usr/lib/python3.6/site-packages/seaborn/categorical.py:598: FutureWarning: remove_na is deprecated and is a private function. Do not use.
+      kde_data = remove_na(group_data)
+    /usr/lib/python3.6/site-packages/seaborn/categorical.py:826: FutureWarning: remove_na is deprecated and is a private function. Do not use.
+      violin_data = remove_na(group_data)
 
 
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7fde53956090>
+
+
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f1fe97030b8>
 
 
 
 
-![png](README_files/README_12_1.png)
+![png](README_files/README_12_2.png)
 
 
 There is some *bad* SF out there.
@@ -212,7 +230,6 @@ At this point I wonder - since we can assign multiple 'shelves' (tags) to each b
 
 
 ```python
-from rpy2 import robjects
 
 all_shelves = shelves_counter.keys()
 names_dict = {} # key: shelf name, value: robjects.StrVector of names
@@ -227,8 +244,12 @@ names_dict = robjects.ListVector(names_dict)
 %R -i names_dict -r 150 -w 900 -h 700 upset(fromList(names_dict), order.by = "freq", nsets = 9)
 ```
 
+    /usr/local/lib64/python3.6/site-packages/rpy2/ipython/rmagic.py:73: UserWarning: The Python package 'pandas' is stronglyrecommended when using `rpy2.ipython`. Unfortunately it could not be loaded, but at least we found 'numpy'.
+      "but at least we found 'numpy'.")))
 
-![png](README_files/README_14_0.png)
+
+
+![png](README_files/README_14_1.png)
 
 
 Most shelves are 'alone', but 'essays + non-fiction', 'sci-fi + sf' (should clean that up...), 'biography + non-fiction' show the biggest overlap.
@@ -255,22 +276,23 @@ for cluster_label, element in zip(clusters, all_shelves):
 print('Clusters with more than one member:')
 for k in sorted(cluster_dict):
     if len(cluster_dict[k]) > 1:
-        print k, cluster_dict[k]
+        print(k, cluster_dict[k])
 ```
 
-    DBSCAN made 163 clusters for 178 shelves/tags.
+    DBSCAN made 164 clusters for 180 shelves/tags.
     Clusters with more than one member:
-    0 ['essay', 'essays']
-    16 ['australia', 'austria']
-    23 ['on-writing', 'on-thinking', 'on-living']
-    37 ['humble-bundle-jpsf', 'humble-bundle2', 'humble-bundle']
-    41 ['history-of-biology', 'history-of-philosophy']
-    44 ['greece', 'greek']
-    49 ['sociology', 'psychology', 'mythology', 'theology']
-    60 ['ww1', 'ww2']
-    106 ['russian', 'russia']
-    112 ['future', 'nature']
-    124 ['pop-philosophy', 'philosophy']
+    0 ['on-writing', 'on-living', 'on-thinking']
+    5 ['letters', 'lectures']
+    7 ['essays', 'essay']
+    13 ['psychology', 'sociology', 'theology', 'mythology']
+    15 ['greece', 'greek']
+    16 ['philosophy', 'pop-philosophy']
+    20 ['russia', 'russian']
+    42 ['future', 'nature']
+    49 ['australia', 'austria']
+    58 ['ww2', 'ww1']
+    61 ['humble-bundle-jpsf', 'humble-bundle2', 'humble-bundle']
+    107 ['history-of-philosophy', 'history-of-biology']
 
 
 Ha, the classic Austria/Australia thing. Some clusters are problematic due to too-short label names (arab/iraq), some other clusters are good and show me that I made some mistakes in labeling! French and France should be together, Greece and Greek too. *Neat!*
@@ -406,12 +428,12 @@ first_names = cleaned_df['Author'].str.split(' ',expand=True)[0]
 d = gender.Detector(case_sensitive=False)
 
 genders = [d.get_gender(name) for name in first_names]
-print(zip(genders[:5], first_names[:5]))
+print(list(zip(genders[:5], first_names[:5])))
 # let's also add those few 'mostly_female' and 'mostly_male' into the main grou
 genders = pd.Series([x.replace('mostly_female','female').replace('mostly_male','male') for x in genders])
 ```
 
-    [(u'male', 'Thomas'), (u'male', 'Paul'), (u'unknown', 'Plato'), (u'male', 'Michel'), (u'female', 'Joan')]
+    [('unknown', 'Questlove'), ('female', 'Sue'), ('male', 'Freeman'), ('male', 'Jorge'), ('male', 'Jacek')]
 
 
 
@@ -421,10 +443,10 @@ print(gender_ratios)
 _ = gender_ratios.plot(kind='bar')
 ```
 
-    male       504
-    unknown     95
-    female      56
-    andy        11
+    male       524
+    unknown     80
+    female      58
+    andy        10
     dtype: int64
 
 
@@ -479,7 +501,7 @@ scipy.stats.ks_2samp(male_scores, female_scores)
 
 
 
-    Ks_2sampResult(statistic=0.04300489929232444, pvalue=0.9999999999998631)
+    Ks_2sampResult(statistic=0.05363984674329503, pvalue=0.999999999736304)
 
 
 
@@ -500,13 +522,12 @@ print(other.columns)
 other.head(3)
 ```
 
-    Index([u'book_id', u'goodreads_book_id', u'best_book_id', u'work_id',
-           u'books_count', u'isbn', u'isbn13', u'authors',
-           u'original_publication_year', u'original_title', u'title',
-           u'language_code', u'average_rating', u'ratings_count',
-           u'work_ratings_count', u'work_text_reviews_count', u'ratings_1',
-           u'ratings_2', u'ratings_3', u'ratings_4', u'ratings_5', u'image_url',
-           u'small_image_url'],
+    Index(['book_id', 'goodreads_book_id', 'best_book_id', 'work_id',
+           'books_count', 'isbn', 'isbn13', 'authors', 'original_publication_year',
+           'original_title', 'title', 'language_code', 'average_rating',
+           'ratings_count', 'work_ratings_count', 'work_text_reviews_count',
+           'ratings_1', 'ratings_2', 'ratings_3', 'ratings_4', 'ratings_5',
+           'image_url', 'small_image_url'],
           dtype='object')
 
 
@@ -514,6 +535,19 @@ other.head(3)
 
 
 <div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -647,12 +681,12 @@ _ = gender_ratios.plot(kind='bar')
 other['Gender'] = other_genders
 ```
 
-    male             4643
-    female           3400
-    unknown          1220
-    mostly_male       350
-    mostly_female     338
-    andy               49
+    male             4669
+    female           3424
+    unknown          1180
+    mostly_male       347
+    mostly_female     332
+    andy               48
     dtype: int64
 
 
@@ -660,7 +694,7 @@ other['Gender'] = other_genders
 ![png](README_files/README_37_1.png)
 
 
-A bit better than my own reviews!
+A bit better than my own reviews! I should multiply the authors with their numbers_read, then J. K. Rowling will probably blow everybody else out of the water
 
 
 ```python
@@ -694,7 +728,7 @@ both = other.merge(cleaned_df, how='inner', left_on='goodreads_book_id', right_o
 print('My reviews: %s, 10k Reviews: %s, Intersection: %s'%(cleaned_df.shape, other.shape, both.shape))
 ```
 
-    My reviews: (666, 32), 10k Reviews: (10000, 24), Intersection: (253, 56)
+    My reviews: (672, 32), 10k Reviews: (10000, 24), Intersection: (253, 56)
 
 
 Looks good! Now check which is the most common and the most obscure book in my list
@@ -792,7 +826,7 @@ sns.distplot(cleaned_df['Difference Rating'], kde=False)
 
 
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7fde3ec6ecd0>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f1fde031c50>
 
 
 
@@ -863,7 +897,7 @@ pylab.axis("off")
 pylab.show()
 ```
 
-    You have 68649 words in 436 reviews
+    You have 71257 words in 442 reviews
 
 
 
@@ -895,8 +929,12 @@ plt.show()
 
 ```
 
+    /usr/lib/python3.6/site-packages/seaborn/categorical.py:1460: FutureWarning: remove_na is deprecated and is a private function. Do not use.
+      stat_data = remove_na(group_data)
 
-![png](README_files/README_55_0.png)
+
+
+![png](README_files/README_55_1.png)
 
 
 Monday is procrastination day.
@@ -986,7 +1024,7 @@ pylab.axis('off')
 pylab.show()
 ```
 
-    a serious case of impostor's syndrome
+    , both collections of essays - some are book reviews, which are now mostly known for ycombinator, one of the napoleonic era
 
 
 
