@@ -49,7 +49,7 @@ OK, let's start!
 
 
 ```python
-% pylab inline
+%pylab inline
 
 # for most plots
 import numpy as np
@@ -106,6 +106,9 @@ plt.rcParams['figure.figsize'] = [10, 5]
 df = pd.read_csv('./goodreads_export.csv')
 # keep only books that have a rating (unrated books have a rating of 0, we don't need that)
 cleaned_df = df[df["My Rating"] != 0]
+
+# get rid of noise in 2012
+cleaned_df = cleaned_df[(cleaned_df['Date Added'] > '2013-01-01')]
 ```
 
 # Score distribution
@@ -117,15 +120,19 @@ g = sns.distplot(cleaned_df["My Rating"], kde=False)
 "Average: %.2f"%cleaned_df["My Rating"].mean(), "Median: %s"%cleaned_df["My Rating"].median()
 ```
 
+    /usr/lib64/python3.7/site-packages/scipy/stats/stats.py:1713: FutureWarning: Using a non-tuple sequence for multidimensional indexing is deprecated; use `arr[tuple(seq)]` instead of `arr[seq]`. In the future this will be interpreted as an array index, `arr[np.array(seq)]`, which will result either in an error or a different result.
+      return np.add.reduce(sorted[indexer] * weights, axis=axis) / sumval
 
 
 
-    ('Average: 3.62', 'Median: 4.0')
+
+
+    ('Average: 3.54', 'Median: 4.0')
 
 
 
 
-![png](README_files/README_5_1.png)
+![png](README_files/README_5_2.png)
 
 
 That doesn't look normally distributed to me - let's ask Shapiro-Wilk (null hypothesis: data is drawn from normal distribution):
@@ -139,7 +146,7 @@ else:
     print("Cannot reject null hypothesis (p=%s)"%p_value)
 ```
 
-    Rejecting null hypothesis - data does not come from a normal distribution (p=5.541150849244537e-23)
+    Rejecting null hypothesis - data does not come from a normal distribution (p=9.642547798107213e-21)
 
 
 In my case, the data is not normally distributed (in other words, the book scores are not evenly distributed around the middle). If you think about it, this makes sense: most readers don't read perfectly randomly, I avoid books I believe I'd dislike, and choose books that I prefer. I rate those books higher than average, therefore, my curve of scores is slanted towards the right.
@@ -153,8 +160,12 @@ Do I give longer books better scores? A minor tendency but nothing special (it's
 g = sns.jointplot("Number of Pages", "My Rating", data=cleaned_df, kind="reg", size=7, ylim=[0.5,5.5])
 ```
 
+    /usr/local/lib/python3.7/site-packages/seaborn/axisgrid.py:2262: UserWarning: The `size` paramter has been renamed to `height`; please update your code.
+      warnings.warn(msg, UserWarning)
 
-![png](README_files/README_10_0.png)
+
+
+![png](README_files/README_10_1.png)
 
 
 I seem to mostly read books at around 200 to 300 pages so it's hard to tell whether I give longer books better ratings. It's also a nice example that in regards to linear regression, a p-value as tiny as this one doesn't mean much, the r-value is still bad.
@@ -176,7 +187,6 @@ CATEGORIES = 7 # number of most crowded categories to plot
 shelves_ratings = defaultdict(list) # key: shelf-name, value: list of ratings
 shelves_counter = Counter() # counts how many books on each shelf
 shelves_to_names = defaultdict(list) # key: shelf-name, value: list of book names
-
 for index, row in cleaned_df.iterrows():
     my_rating = row["My Rating"]
     if my_rating == 0:
@@ -207,21 +217,15 @@ full_table = pd.DataFrame({"Category":names, "Rating":ratings})
 sns.violinplot(x = "Category", y = "Rating", data=full_table, scale='count')
 ```
 
-    /usr/lib/python3.6/site-packages/seaborn/categorical.py:598: FutureWarning: remove_na is deprecated and is a private function. Do not use.
-      kde_data = remove_na(group_data)
-    /usr/lib/python3.6/site-packages/seaborn/categorical.py:826: FutureWarning: remove_na is deprecated and is a private function. Do not use.
-      violin_data = remove_na(group_data)
+
+
+
+    <matplotlib.axes._subplots.AxesSubplot at 0x7faf08ef25f8>
 
 
 
 
-
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f1fe97030b8>
-
-
-
-
-![png](README_files/README_12_2.png)
+![png](README_files/README_12_1.png)
 
 
 There is some *bad* SF out there.
@@ -232,6 +236,7 @@ At this point I wonder - since we can assign multiple 'shelves' (tags) to each b
 ```python
 
 all_shelves = shelves_counter.keys()
+
 names_dict = {} # key: shelf name, value: robjects.StrVector of names
 for c in all_shelves:
     names_dict[c] = robjects.StrVector(shelves_to_names[c])
@@ -244,12 +249,8 @@ names_dict = robjects.ListVector(names_dict)
 %R -i names_dict -r 150 -w 900 -h 700 upset(fromList(names_dict), order.by = "freq", nsets = 9)
 ```
 
-    /usr/local/lib64/python3.6/site-packages/rpy2/ipython/rmagic.py:73: UserWarning: The Python package 'pandas' is stronglyrecommended when using `rpy2.ipython`. Unfortunately it could not be loaded, but at least we found 'numpy'.
-      "but at least we found 'numpy'.")))
 
-
-
-![png](README_files/README_14_1.png)
+![png](README_files/README_14_0.png)
 
 
 Most shelves are 'alone', but 'essays + non-fiction', 'sci-fi + sf' (should clean that up...), 'biography + non-fiction' show the biggest overlap.
@@ -279,20 +280,23 @@ for k in sorted(cluster_dict):
         print(k, cluster_dict[k])
 ```
 
-    DBSCAN made 164 clusters for 180 shelves/tags.
+    DBSCAN made 149 clusters for 169 shelves/tags.
     Clusters with more than one member:
-    0 ['on-writing', 'on-living', 'on-thinking']
-    5 ['letters', 'lectures']
-    7 ['essays', 'essay']
-    13 ['psychology', 'sociology', 'theology', 'mythology']
-    15 ['greece', 'greek']
-    16 ['philosophy', 'pop-philosophy']
-    20 ['russia', 'russian']
-    42 ['future', 'nature']
-    49 ['australia', 'austria']
-    58 ['ww2', 'ww1']
-    61 ['humble-bundle-jpsf', 'humble-bundle2', 'humble-bundle']
-    107 ['history-of-philosophy', 'history-of-biology']
+    4 ['essays', 'essay']
+    10 ['philosophy', 'pop-philosophy']
+    13 ['history-of-biology', 'history-of-cs', 'history-of-philosophy']
+    17 ['native-american', 'latin-america']
+    21 ['greek', 'greece']
+    25 ['future', 'nature']
+    26 ['australia', 'austria']
+    30 ['psychology', 'biology', 'sociology', 'theology', 'mythology']
+    34 ['on-living', 'on-thinking', 'on-writing']
+    37 ['russia', 'russian']
+    42 ['letters', 'lectures']
+    58 ['internets', 'interview']
+    71 ['ww2', 'ww1']
+    74 ['humble-bundle-jpsf', 'humble-bundle2']
+    78 ['weird-horror', 'body-horror']
 
 
 Ha, the classic Austria/Australia thing. Some clusters are problematic due to too-short label names (arab/iraq), some other clusters are good and show me that I made some mistakes in labeling! French and France should be together, Greece and Greek too. *Neat!*
@@ -308,7 +312,9 @@ I didn't use Goodreads in 2012 much so let's see how it looks like without 2012:
 
 ```python
 # first, transform to datetype and get rid of all invalid dates
-dates = pd.to_datetime(cleaned_df["Date Read"])
+#dates = pd.to_datetime(cleaned_df["Date Read"])
+dates = pd.to_datetime(cleaned_df["Date Added"])
+
 dates = dates.dropna()
 sorted_dates = sorted(dates)
 
@@ -333,8 +339,12 @@ sns.distplot(all_days_without_2012, axlabel="Distance in days between books read
 pylab.show()
 ```
 
+    /usr/lib64/python3.7/site-packages/scipy/stats/stats.py:1713: FutureWarning: Using a non-tuple sequence for multidimensional indexing is deprecated; use `arr[tuple(seq)]` instead of `arr[seq]`. In the future this will be interpreted as an array index, `arr[np.array(seq)]`, which will result either in an error or a different result.
+      return np.add.reduce(sorted[indexer] * weights, axis=axis) / sumval
 
-![png](README_files/README_19_0.png)
+
+
+![png](README_files/README_19_1.png)
 
 
 ***
@@ -433,7 +443,7 @@ print(list(zip(genders[:5], first_names[:5])))
 genders = pd.Series([x.replace('mostly_female','female').replace('mostly_male','male') for x in genders])
 ```
 
-    [('unknown', 'Questlove'), ('female', 'Sue'), ('male', 'Freeman'), ('male', 'Jorge'), ('male', 'Jacek')]
+    [('male', 'Jerome'), ('female', 'Anne'), ('male', 'George'), ('male', 'Jason'), ('male', 'Michael')]
 
 
 
@@ -443,10 +453,10 @@ print(gender_ratios)
 _ = gender_ratios.plot(kind='bar')
 ```
 
-    male       524
-    unknown     80
-    female      58
-    andy        10
+    male       388
+    unknown     59
+    female      45
+    andy         3
     dtype: int64
 
 
@@ -501,7 +511,7 @@ scipy.stats.ks_2samp(male_scores, female_scores)
 
 
 
-    Ks_2sampResult(statistic=0.05363984674329503, pvalue=0.999999999736304)
+    Ks_2sampResult(statistic=0.2548076923076923, pvalue=0.3735836498640424)
 
 
 
@@ -728,7 +738,7 @@ both = other.merge(cleaned_df, how='inner', left_on='goodreads_book_id', right_o
 print('My reviews: %s, 10k Reviews: %s, Intersection: %s'%(cleaned_df.shape, other.shape, both.shape))
 ```
 
-    My reviews: (672, 32), 10k Reviews: (10000, 24), Intersection: (253, 56)
+    My reviews: (495, 32), 10k Reviews: (10000, 24), Intersection: (125, 56)
 
 
 Looks good! Now check which is the most common and the most obscure book in my list
@@ -785,21 +795,21 @@ for x in ten_biggest_diff.iterrows():
 ![jpeg](README_files/README_48_0.jpeg)
 
 
+    Book: The Perks of Being a Wallflower, My rating: 2 Global average rating: 4.2
+
+
+
+![jpeg](README_files/README_48_2.jpeg)
+
+
     Book: The Martian, My rating: 2 Global average rating: 4.4
 
 
 
-![png](README_files/README_48_2.png)
+![png](README_files/README_48_4.png)
 
 
     Book: The Dice Man, My rating: 1 Global average rating: 3.59
-
-
-
-![jpeg](README_files/README_48_4.jpeg)
-
-
-    Book: Rama II (Rama, #2), My rating: 1 Global average rating: 3.67
 
 
 
@@ -813,7 +823,7 @@ for x in ten_biggest_diff.iterrows():
 ![jpeg](README_files/README_48_8.jpeg)
 
 
-    Book: To Your Scattered Bodies Go (Riverworld, #1), My rating: 1 Global average rating: 3.94
+    Book: To Your Scattered Bodies Go (Riverworld, #1), My rating: 1 Global average rating: 3.95
 
 
 Do I have many differences in how I rate my book when compared with the community?
@@ -826,7 +836,7 @@ sns.distplot(cleaned_df['Difference Rating'], kde=False)
 
 
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f1fde031c50>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7faefd5736d8>
 
 
 
@@ -897,7 +907,7 @@ pylab.axis("off")
 pylab.show()
 ```
 
-    You have 71257 words in 442 reviews
+    You have 72389 words in 438 reviews
 
 
 
@@ -929,12 +939,8 @@ plt.show()
 
 ```
 
-    /usr/lib/python3.6/site-packages/seaborn/categorical.py:1460: FutureWarning: remove_na is deprecated and is a private function. Do not use.
-      stat_data = remove_na(group_data)
 
-
-
-![png](README_files/README_55_1.png)
+![png](README_files/README_55_0.png)
 
 
 Monday is procrastination day.
@@ -1024,7 +1030,7 @@ pylab.axis('off')
 pylab.show()
 ```
 
-    , both collections of essays - some are book reviews, which are now mostly known for ycombinator, one of the napoleonic era
+    )day by day the ice was creeping over the first history book wouldn't be without his generosity
 
 
 
