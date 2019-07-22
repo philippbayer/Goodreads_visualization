@@ -1,0 +1,10 @@
+seaborn
+wordcloud
+nltk
+networkx
+pymarkovchain
+image
+sklearn
+distance
+gender_guesser
+rpy2
