@@ -1,3 +1,4 @@
+
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/philippbayer/Goodreads_visualization/master?filepath=README.ipynb)
 
 # Goodreads visualization
@@ -38,6 +39,12 @@ It seems that there's currently a bug on Goodreads' end with the export of data,
 To install all:
 
     pip install seaborn wordcloud nltk networkx pymarkovchain image sklearn distance gender_guesser rpy2
+    
+Under Windows and anaconda you instead need to run 
+
+    conda install rpy2
+   
+instead of using pip to install rpy2.
 
 ## Licenses
 
@@ -86,12 +93,12 @@ sns.set_palette("coolwarm")
 # for plotting images
 from IPython.display import Image
 
-# for gender guessing
 import gender_guesser.detector as gender
 
 # for R
 import pandas
-from rpy2 import robjects
+from rpy2 import robjects 
+# conda install -c r rpy2 on Windows
 
 import matplotlib.pyplot as plt
 plt.rcParams['figure.figsize'] = [10, 5]
@@ -121,10 +128,6 @@ g = sns.distplot(cleaned_df["My Rating"], kde=False)
 "Average: %.2f"%cleaned_df["My Rating"].mean(), "Median: %s"%cleaned_df["My Rating"].median()
 ```
 
-    /usr/lib64/python3.7/site-packages/scipy/stats/stats.py:1713: FutureWarning: Using a non-tuple sequence for multidimensional indexing is deprecated; use `arr[tuple(seq)]` instead of `arr[seq]`. In the future this will be interpreted as an array index, `arr[np.array(seq)]`, which will result either in an error or a different result.
-      return np.add.reduce(sorted[indexer] * weights, axis=axis) / sumval
-
-
 
 
 
@@ -133,7 +136,7 @@ g = sns.distplot(cleaned_df["My Rating"], kde=False)
 
 
 
-![png](README_files/README_5_2.png)
+![png](README_files/README_5_1.png)
 
 
 That doesn't look normally distributed to me - let's ask Shapiro-Wilk (null hypothesis: data is drawn from normal distribution):
@@ -147,7 +150,7 @@ else:
     print("Cannot reject null hypothesis (p=%s)"%p_value)
 ```
 
-    Rejecting null hypothesis - data does not come from a normal distribution (p=9.642547798107213e-21)
+    Rejecting null hypothesis - data does not come from a normal distribution (p=1.0934748106066742e-21)
 
 
 In my case, the data is not normally distributed (in other words, the book scores are not evenly distributed around the middle). If you think about it, this makes sense: most readers don't read perfectly randomly, I avoid books I believe I'd dislike, and choose books that I prefer. I rate those books higher than average, therefore, my curve of scores is slanted towards the right.
@@ -158,18 +161,27 @@ Do I give longer books better scores? A minor tendency but nothing special (it's
 
 
 ```python
-g = sns.jointplot("Number of Pages", "My Rating", data=cleaned_df, kind="reg", size=7, ylim=[0.5,5.5])
+g = sns.jointplot("Number of Pages", "My Rating", data=cleaned_df, kind="reg", height=7, ylim=[0.5,5.5])
+g.annotate(scipy.stats.pearsonr)
 ```
 
-    /usr/local/lib/python3.7/site-packages/seaborn/axisgrid.py:2262: UserWarning: The `size` paramter has been renamed to `height`; please update your code.
-      warnings.warn(msg, UserWarning)
+    C:\Users\00089503\AppData\Local\Continuum\anaconda3\lib\site-packages\seaborn\axisgrid.py:1847: UserWarning: JointGrid annotation is deprecated and will be removed in a future release.
+      warnings.warn(UserWarning(msg))
 
 
 
-![png](README_files/README_10_1.png)
 
 
-I seem to mostly read books at around 200 to 300 pages so it's hard to tell whether I give longer books better ratings. It's also a nice example that in regards to linear regression, a p-value as tiny as this one doesn't mean much, the r-value is still bad.
+    <seaborn.axisgrid.JointGrid at 0x219a35c7e10>
+
+
+
+
+![png](README_files/README_10_2.png)
+
+
+I seem to mostly read books at around 200 to 300 pages so it's hard to tell whether I give longer books better ratings. 
+It's a nice example that in regards to linear regression, a p-value as tiny as this one doesn't mean much, the r-value is still bad.
 
 ***
 
@@ -221,7 +233,7 @@ sns.violinplot(x = "Category", y = "Rating", data=full_table, scale='count')
 
 
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7faf08ef25f8>
+    <matplotlib.axes._subplots.AxesSubplot at 0x219a37269b0>
 
 
 
@@ -234,8 +246,13 @@ There is some *bad* SF out there.
 At this point I wonder - since we can assign multiple 'shelves' (tags) to each book, do I have some tags that appear more often together than not? Let's use R!
 
 
-```python
 
+```python
+%load_ext rpy2.ipython
+```
+
+
+```python
 all_shelves = shelves_counter.keys()
 
 names_dict = {} # key: shelf name, value: robjects.StrVector of names
@@ -243,15 +260,19 @@ for c in all_shelves:
     names_dict[c] = robjects.StrVector(shelves_to_names[c])
 
 names_dict = robjects.ListVector(names_dict)    
-%load_ext rpy2.ipython
-%R library(UpSetR)
-# by default, only 5 sets are considered, so change nsets
-
-%R -i names_dict -r 150 -w 900 -h 700 upset(fromList(names_dict), order.by = "freq", nsets = 9)
 ```
 
 
-![png](README_files/README_14_0.png)
+```r
+%%R -i names_dict -r 150 -w 900 -h 600
+library(UpSetR)
+names_dict <- fromList(names_dict)
+# by default, only 5 sets are considered, so change nsets
+upset(names_dict, nsets = 9)
+```
+
+
+![png](README_files/README_16_0.png)
 
 
 Most shelves are 'alone', but 'essays + non-fiction', 'sci-fi + sf' (should clean that up...), 'biography + non-fiction' show the biggest overlap.
@@ -281,23 +302,22 @@ for k in sorted(cluster_dict):
         print(k, cluster_dict[k])
 ```
 
-    DBSCAN made 149 clusters for 169 shelves/tags.
+    DBSCAN made 164 clusters for 183 shelves/tags.
     Clusters with more than one member:
-    4 ['essays', 'essay']
-    10 ['philosophy', 'pop-philosophy']
-    13 ['history-of-biology', 'history-of-cs', 'history-of-philosophy']
-    17 ['native-american', 'latin-america']
-    21 ['greek', 'greece']
-    25 ['future', 'nature']
-    26 ['australia', 'austria']
-    30 ['psychology', 'biology', 'sociology', 'theology', 'mythology']
-    34 ['on-living', 'on-thinking', 'on-writing']
-    37 ['russia', 'russian']
-    42 ['letters', 'lectures']
-    58 ['internets', 'interview']
-    71 ['ww2', 'ww1']
-    74 ['humble-bundle-jpsf', 'humble-bundle2']
-    78 ['weird-horror', 'body-horror']
+    16 ['on-writing', 'on-living', 'on-thinking']
+    22 ['essay', 'essays']
+    28 ['ww2', 'ww1']
+    30 ['history-of-maths', 'history-of-biology', 'history-of-cs', 'history-of-philosophy']
+    35 ['action', 'fiction']
+    38 ['ireland', 'iceland']
+    46 ['greece', 'greek']
+    58 ['philosophy', 'pop-philosophy']
+    61 ['native-american', 'latin-america']
+    69 ['psychology', 'sociology', 'theology', 'mythology']
+    73 ['russia', 'russian']
+    77 ['letters', 'lectures']
+    98 ['humble-bundle-jpsf', 'humble-bundle2']
+    101 ['weird-horror', 'body-horror']
 
 
 Ha, the classic Austria/Australia thing. Some clusters are problematic due to too-short label names (arab/iraq), some other clusters are good and show me that I made some mistakes in labeling! French and France should be together, Greece and Greek too. *Neat!*
@@ -340,12 +360,8 @@ sns.distplot(all_days_without_2012, axlabel="Distance in days between books read
 pylab.show()
 ```
 
-    /usr/lib64/python3.7/site-packages/scipy/stats/stats.py:1713: FutureWarning: Using a non-tuple sequence for multidimensional indexing is deprecated; use `arr[tuple(seq)]` instead of `arr[seq]`. In the future this will be interpreted as an array index, `arr[np.array(seq)]`, which will result either in an error or a different result.
-      return np.add.reduce(sorted[indexer] * weights, axis=axis) / sumval
 
-
-
-![png](README_files/README_19_1.png)
+![png](README_files/README_21_0.png)
 
 
 ***
@@ -353,6 +369,8 @@ pylab.show()
 ## plot Heatmap of dates read
 
 Parses the "dates read" for each book read, bins them by month, and makes a heatmap to show in which months I read more than in others. Also makes a lineplot for books read, split up by year.
+
+NOTE: There is a very strange bug in Goodreads for about a year now. The exported CSV does not correctly track the date read.
 
 
 ```python
@@ -382,7 +400,6 @@ for year in range(first_year, todays_year+1):
     for month in range(1, 13):
         if (year == todays_year) and month > todays_month:
             # don't count future months
-            # it's 2015-12 now so a bit hard to test
             break
         this_count = read_dict[ (year, month) ]
         all_years.append(year)
@@ -393,17 +410,18 @@ for year in range(first_year, todays_year+1):
 df = pd.DataFrame( { "month":all_months, "year":all_years, "books_read":all_counts } )
 dfp = df.pivot("month", "year", "books_read")
 
+fig, ax = plt.subplots(figsize=(10,10))
 # now make the heatmap
-ax = sns.heatmap(dfp, annot=True)
+ax = sns.heatmap(dfp, annot=True, ax=ax, square= True)
 ```
 
 
-![png](README_files/README_21_0.png)
+![png](README_files/README_23_0.png)
 
 
 What happened in May 2014?
 
-Update in 2018 - currently the 'date_read' column doesn't accurately track which books were actually read, this is a bug on Goodreads' end
+Update in 2018 - currently the 'date_read' column doesn't accurately track which books were actually read, this is a bug on Goodreads' end, see for example https://help.goodreads.com/s/question/0D51H00004ADr7o/i-have-exported-my-library-and-some-books-do-not-have-any-information-listed-for-date-read
 
 ***
 
@@ -420,12 +438,15 @@ pylab.show()
 ```
 
 
-![png](README_files/README_23_0.png)
+![png](README_files/README_25_0.png)
 
 
-It's nice how reading behaviour (Goodreads usage) connects over the months - it slowly in 2013, stays constant in 2014/2015, and now goes down again. You can see when my son was born!
+It's nice how reading behaviour (Goodreads usage) connects over the months - it slowly in 2013, stays constant in 2014/2015, and now goes down again. You can see when my first son was born!
 
 (Solution: 2016-8-25)
+
+(all other >2018 books are still missing their date_read dates...)
+
 
 ***
 
@@ -444,7 +465,7 @@ print(list(zip(genders[:5], first_names[:5])))
 genders = pd.Series([x.replace('mostly_female','female').replace('mostly_male','male') for x in genders])
 ```
 
-    [('male', 'Jerome'), ('female', 'Anne'), ('male', 'George'), ('male', 'Jason'), ('male', 'Michael')]
+    [('female', 'Yukiko'), ('male', 'Oliver'), ('male', 'Alan'), ('male', 'Charles'), ('female', 'Lina')]
 
 
 
@@ -454,15 +475,15 @@ print(gender_ratios)
 _ = gender_ratios.plot(kind='bar')
 ```
 
-    male       388
-    unknown     59
-    female      45
+    male       418
+    unknown     67
+    female      55
     andy         3
     dtype: int64
 
 
 
-![png](README_files/README_26_1.png)
+![png](README_files/README_28_1.png)
 
 
 Now THAT'S gender bias. Do I rate the genders differently?
@@ -478,7 +499,7 @@ _ = plt.hist([male_scores, female_scores], color=['r','b'], alpha=0.5)
 ```
 
 
-![png](README_files/README_28_0.png)
+![png](README_files/README_30_0.png)
 
 
 Hard to tell any difference since there are so fewer women authors here - let's split them up into different plots
@@ -499,7 +520,7 @@ fig.tight_layout()
 ```
 
 
-![png](README_files/README_30_0.png)
+![png](README_files/README_32_0.png)
 
 
 Are these two samples from the same distribution? Hard to tell since their size is so different, but let's ask Kolmogorov-Smirnov (null hypothesis: they are from the same distribution)
@@ -512,7 +533,7 @@ scipy.stats.ks_2samp(male_scores, female_scores)
 
 
 
-    Ks_2sampResult(statistic=0.2548076923076923, pvalue=0.3735836498640424)
+    Ks_2sampResult(statistic=0.2796296296296296, pvalue=0.39616525989582574)
 
 
 
@@ -525,6 +546,12 @@ We cannot reject the null hypthesis as the p-value is very, very high. (but agai
 
 
 A helpful soul has uploaded ratings and stats for the 10,000 books with most ratings on Goodreads (https://github.com/zygmuntz/goodbooks-10k). Let's compare those with my ratings!
+
+(You may have to run 
+
+    git submodule update
+    
+to get the 10k submodule)
 
 
 ```python
@@ -702,7 +729,7 @@ other['Gender'] = other_genders
 
 
 
-![png](README_files/README_37_1.png)
+![png](README_files/README_39_1.png)
 
 
 A bit better than my own reviews! I should multiply the authors with their numbers_read, then J. K. Rowling will probably blow everybody else out of the water
@@ -726,7 +753,7 @@ fig.tight_layout()
 ```
 
 
-![png](README_files/README_39_0.png)
+![png](README_files/README_41_0.png)
 
 
 Very similar, again, with a slight shift to the right in the 'female scores'
@@ -739,7 +766,7 @@ both = other.merge(cleaned_df, how='inner', left_on='goodreads_book_id', right_o
 print('My reviews: %s, 10k Reviews: %s, Intersection: %s'%(cleaned_df.shape, other.shape, both.shape))
 ```
 
-    My reviews: (495, 32), 10k Reviews: (10000, 24), Intersection: (125, 56)
+    My reviews: (543, 32), 10k Reviews: (10000, 24), Intersection: (129, 56)
 
 
 Looks good! Now check which is the most common and the most obscure book in my list
@@ -752,7 +779,7 @@ Image(both.sort_values(by='ratings_count').head(1).image_url.iloc[0])
 
 
 
-![jpeg](README_files/README_44_0.jpeg)
+![jpeg](README_files/README_46_0.jpeg)
 
 
 
@@ -766,7 +793,7 @@ Image(both.sort_values(by='ratings_count').tail(1).image_url.iloc[0])
 
 
 
-![jpeg](README_files/README_46_0.jpeg)
+![jpeg](README_files/README_48_0.jpeg)
 
 
 
@@ -793,35 +820,28 @@ for x in ten_biggest_diff.iterrows():
 ```
 
 
-![jpeg](README_files/README_48_0.jpeg)
-
-
-    Book: The Perks of Being a Wallflower, My rating: 2 Global average rating: 4.2
-
-
-
-![jpeg](README_files/README_48_2.jpeg)
+![jpeg](README_files/README_50_0.jpeg)
 
 
     Book: The Martian, My rating: 2 Global average rating: 4.4
 
 
 
-![png](README_files/README_48_4.png)
+![png](README_files/README_50_2.png)
 
 
-    Book: The Dice Man, My rating: 1 Global average rating: 3.59
-
-
-
-![jpeg](README_files/README_48_6.jpeg)
-
-
-    Book: Stranger in a Strange Land, My rating: 1 Global average rating: 3.91
+    Book: The Dice Man, My rating: 1 Global average rating: 3.58
 
 
 
-![jpeg](README_files/README_48_8.jpeg)
+![jpeg](README_files/README_50_4.jpeg)
+
+
+    Book: Stranger in a Strange Land, My rating: 1 Global average rating: 3.92
+
+
+
+![jpeg](README_files/README_50_6.jpeg)
 
 
     Book: To Your Scattered Bodies Go (Riverworld, #1), My rating: 1 Global average rating: 3.95
@@ -837,12 +857,12 @@ sns.distplot(cleaned_df['Difference Rating'], kde=False)
 
 
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7faefd5736d8>
+    <matplotlib.axes._subplots.AxesSubplot at 0x219a8496860>
 
 
 
 
-![png](README_files/README_50_1.png)
+![png](README_files/README_52_1.png)
 
 
 Not really, mostly 0 and 1 difference.
@@ -908,11 +928,11 @@ pylab.axis("off")
 pylab.show()
 ```
 
-    You have 72389 words in 438 reviews
+    You have 82044 words in 485 reviews
 
 
 
-![png](README_files/README_53_1.png)
+![png](README_files/README_55_1.png)
 
 
 ***
@@ -941,7 +961,7 @@ plt.show()
 ```
 
 
-![png](README_files/README_55_0.png)
+![png](README_files/README_57_0.png)
 
 
 Monday is procrastination day.
@@ -1031,11 +1051,11 @@ pylab.axis('off')
 pylab.show()
 ```
 
-    )day by day the ice was creeping over the first history book wouldn't be without his generosity
+    onoda describes shooting in the early 21st century email client, mozilla thunderbird"
 
 
 
-![png](README_files/README_57_1.png)
+![png](README_files/README_59_1.png)
 
 
 ***
