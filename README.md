@@ -111,7 +111,7 @@ plt.rcParams['figure.figsize'] = [10, 5]
 
 
 ```python
-df = pd.read_csv('./goodreads_export.csv')
+df = pd.read_csv('./goodreads_library_export.csv')
 # keep only books that have a rating (unrated books have a rating of 0, we don't need that)
 cleaned_df = df[df["My Rating"] != 0]
 
@@ -150,7 +150,7 @@ else:
     print("Cannot reject null hypothesis (p=%s)"%p_value)
 ```
 
-    Rejecting null hypothesis - data does not come from a normal distribution (p=1.0934748106066742e-21)
+    Rejecting null hypothesis - data does not come from a normal distribution (p=8.048559751530179e-22)
 
 
 In my case, the data is not normally distributed (in other words, the book scores are not evenly distributed around the middle). If you think about it, this makes sense: most readers don't read perfectly randomly, I avoid books I believe I'd dislike, and choose books that I prefer. I rate those books higher than average, therefore, my curve of scores is slanted towards the right.
@@ -172,7 +172,7 @@ g.annotate(scipy.stats.pearsonr)
 
 
 
-    <seaborn.axisgrid.JointGrid at 0x219a35c7e10>
+    <seaborn.axisgrid.JointGrid at 0x1f90b514080>
 
 
 
@@ -233,7 +233,7 @@ sns.violinplot(x = "Category", y = "Rating", data=full_table, scale='count')
 
 
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x219a37269b0>
+    <matplotlib.axes._subplots.AxesSubplot at 0x1f90b6e8278>
 
 
 
@@ -302,25 +302,24 @@ for k in sorted(cluster_dict):
         print(k, cluster_dict[k])
 ```
 
-    DBSCAN made 164 clusters for 183 shelves/tags.
+    DBSCAN made 166 clusters for 184 shelves/tags.
     Clusters with more than one member:
-    16 ['on-writing', 'on-living', 'on-thinking']
-    22 ['essay', 'essays']
-    28 ['ww2', 'ww1']
-    30 ['history-of-maths', 'history-of-biology', 'history-of-cs', 'history-of-philosophy']
-    35 ['action', 'fiction']
-    38 ['ireland', 'iceland']
-    46 ['greece', 'greek']
-    58 ['philosophy', 'pop-philosophy']
-    61 ['native-american', 'latin-america']
-    69 ['psychology', 'sociology', 'theology', 'mythology']
-    73 ['russia', 'russian']
-    77 ['letters', 'lectures']
-    98 ['humble-bundle-jpsf', 'humble-bundle2']
-    101 ['weird-horror', 'body-horror']
+    1 ['fiction', 'action']
+    2 ['russia', 'russian']
+    12 ['latin-america', 'native-american']
+    24 ['ww1', 'ww2']
+    32 ['humble-bundle2', 'humble-bundle-jpsf']
+    47 ['essays', 'essay']
+    49 ['on-living', 'on-writing', 'on-thinking']
+    50 ['history-of-biology', 'history-of-maths', 'history-of-cs', 'history-of-philosophy']
+    53 ['greek', 'greece']
+    66 ['iceland', 'ireland']
+    88 ['mythology', 'psychology', 'sociology', 'theology']
+    116 ['philosophy', 'pop-philosophy']
+    126 ['letters', 'lectures']
 
 
-Ha, the classic Austria/Australia thing. Some clusters are problematic due to too-short label names (arab/iraq), some other clusters are good and show me that I made some mistakes in labeling! French and France should be together, Greece and Greek too. *Neat!*
+Some clusters are problematic due to too-short label names (arab/iraq), some other clusters are good and show me that I made some mistakes in labeling! French and France should be together, Greece and Greek too. *Neat!*
 
 (Without normalising the distance by string length clusters like horror/body-horror don't appear.)
 
@@ -465,7 +464,7 @@ print(list(zip(genders[:5], first_names[:5])))
 genders = pd.Series([x.replace('mostly_female','female').replace('mostly_male','male') for x in genders])
 ```
 
-    [('female', 'Yukiko'), ('male', 'Oliver'), ('male', 'Alan'), ('male', 'Charles'), ('female', 'Lina')]
+    [('male', 'Don'), ('male', 'Daniil'), ('male', 'William'), ('unknown', 'E.T.A.'), ('male', 'John')]
 
 
 
@@ -475,9 +474,9 @@ print(gender_ratios)
 _ = gender_ratios.plot(kind='bar')
 ```
 
-    male       418
+    male       423
     unknown     67
-    female      55
+    female      56
     andy         3
     dtype: int64
 
@@ -533,7 +532,7 @@ scipy.stats.ks_2samp(male_scores, female_scores)
 
 
 
-    Ks_2sampResult(statistic=0.2796296296296296, pvalue=0.39616525989582574)
+    Ks_2sampResult(statistic=0.22018779342723005, pvalue=0.13257156821934568)
 
 
 
@@ -766,7 +765,7 @@ both = other.merge(cleaned_df, how='inner', left_on='goodreads_book_id', right_o
 print('My reviews: %s, 10k Reviews: %s, Intersection: %s'%(cleaned_df.shape, other.shape, both.shape))
 ```
 
-    My reviews: (543, 32), 10k Reviews: (10000, 24), Intersection: (129, 56)
+    My reviews: (549, 32), 10k Reviews: (10000, 24), Intersection: (131, 56)
 
 
 Looks good! Now check which is the most common and the most obscure book in my list
@@ -823,25 +822,32 @@ for x in ten_biggest_diff.iterrows():
 ![jpeg](README_files/README_50_0.jpeg)
 
 
+    Book: The Perks of Being a Wallflower, My rating: 2 Global average rating: 4.2
+
+
+
+![jpeg](README_files/README_50_2.jpeg)
+
+
     Book: The Martian, My rating: 2 Global average rating: 4.4
 
 
 
-![png](README_files/README_50_2.png)
+![png](README_files/README_50_4.png)
 
 
-    Book: The Dice Man, My rating: 1 Global average rating: 3.58
+    Book: The Dice Man, My rating: 1 Global average rating: 3.57
 
 
 
-![jpeg](README_files/README_50_4.jpeg)
+![jpeg](README_files/README_50_6.jpeg)
 
 
     Book: Stranger in a Strange Land, My rating: 1 Global average rating: 3.92
 
 
 
-![jpeg](README_files/README_50_6.jpeg)
+![jpeg](README_files/README_50_8.jpeg)
 
 
     Book: To Your Scattered Bodies Go (Riverworld, #1), My rating: 1 Global average rating: 3.95
@@ -857,7 +863,7 @@ sns.distplot(cleaned_df['Difference Rating'], kde=False)
 
 
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x219a8496860>
+    <matplotlib.axes._subplots.AxesSubplot at 0x1f912dc06d8>
 
 
 
@@ -928,7 +934,7 @@ pylab.axis("off")
 pylab.show()
 ```
 
-    You have 82044 words in 485 reviews
+    You have 83304 words in 491 reviews
 
 
 
@@ -1051,7 +1057,7 @@ pylab.axis('off')
 pylab.show()
 ```
 
-    onoda describes shooting in the early 21st century email client, mozilla thunderbird"
+    we read poetry
 
 
 
