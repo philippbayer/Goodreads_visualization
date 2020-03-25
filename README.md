@@ -3,7 +3,7 @@
 
 # Goodreads visualization
 
-An ipython notebook to play around with Goodreads data and make some seaborn visualizations, learn more about scikit-learn, my own playground!
+A Jupyter notebook to play around with Goodreads data and make some seaborn visualizations, learn more about scikit-learn, my own playground!
 
 You can use it with your own data - go [here](https://www.goodreads.com/review/import) and press "Export your library" to get your own csv.
 
